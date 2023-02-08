@@ -124,3 +124,9 @@ end
 function isTerminal(A::automaton, s::state)
     return s ∈ A.acceptingStates
 end
+
+# removes a state from an automaton
+function removeState!(A::automaton, s::state)
+    delete!(A.acceptingStates, s)
+    delete!(A.states, s)
+end
