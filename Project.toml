@@ -1,0 +1,4 @@
+name = "Automata"
+uuid = "21b8e62a-bad6-4723-85dc-c246f165d04d"
+authors = ["Jonas Seiler <Mail@jonasseiler.de>"]
+version = "0.1.0"
