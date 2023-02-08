@@ -119,3 +119,10 @@ function hasLoop(A::automaton)
 
     return DFS(A.initialState, s, visitedStates)
 end
+
+# Possible ideas to implement:
+# - NFA
+# - Powerset construction
+# - union of two languages
+# - kleene star
+# - other operations on languages
