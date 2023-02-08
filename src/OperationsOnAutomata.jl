@@ -50,3 +50,17 @@ function reduceNonAccessibleStates!(A::automaton)
         end
     end
 end
+
+# returns true if the automaton A accepts the word w, false otherwise
+function isAccepted(A::automaton, w::AbstractString)
+    s = A.initialState
+
+    for c in w
+        if c ∉ A.alphabet
+            return false
+        end
+        s = walkEdge(s, c)
+    end
+
+    return s ∈ A.acceptingStates
+end
