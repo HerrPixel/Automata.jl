@@ -54,10 +54,51 @@ mutable struct automaton
     end
 end
 
-addState(A::automaton, State::AbstractString) = addState(A, state(State))
+addState!(A::automaton, State::AbstractString) = addState(A, state(State))
 
-function addState(A::automaton, State::state)
-    push!(A.states, State)
+function addState!(A::automaton, State::state)
+    A.states[State.name] = State
 end
 
+addTerminalState!(A::automaton, TerminalState::AbstractString) = addTerminalState(A, state(TerminalState))
 
+function addTerminalState!(A::automaton, TerminalState::state)
+    if !haskey(A.states, TerminalState.name)
+        addState!(A, TerminalState)
+    end
+    push!(A.acceptingStates, TerminalState)
+end
+
+function addEdge!(A::automaton, StartingState::AbstractString, Symbol::Char, TargetState::AbstractString)
+    start = get(A.states, StartingState, state(StartingState))
+    target = get(A.states, TargetState, state(TargetState))
+    addEdge!(A, start, Symbol, target)
+end
+
+function addEdge!(A::automaton, StartingState::state, Symbol::Char, TargetState::state)
+    if !haskey(A.states, StartingState.name)
+        addState!(A, StartingState)
+    end
+    if !haskey(A.states, TargetState.name)
+        addState!(A, TargetState)
+    end
+    if Symbol ∉ A.alphabet
+        addSymbol!(A, Symbol)
+    end
+
+    StartingState.neighbours[Symbol] = TargetState
+end
+
+function addSymbol!(A::automaton, Symbol::Char)
+    push!(A.alphabet, Symbol)
+end
+
+function walkEdge(state::State, Symbol::Char)
+    # If the state does not have an entry for that symbol, this will fail.
+    # We need to fix this or change it in the future somehow
+    return state.neighbours[Symbol]
+end
+
+function isTerminal(A::automaton, s::state)
+    return s ∈ A.acceptingStates
+end
