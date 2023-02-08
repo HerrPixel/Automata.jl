@@ -2,3 +2,6 @@ name = "Automata"
 uuid = "21b8e62a-bad6-4723-85dc-c246f165d04d"
 authors = ["Jonas Seiler <Mail@jonasseiler.de>"]
 version = "0.1.0"
+
+[deps]
+DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
