@@ -66,6 +66,9 @@ addState!(A::automaton, State::AbstractString) = addState(A, state(State))
 
 # adding a new state to the automaton
 function addState!(A::automaton, State::state)
+
+    # What if the state already exists?
+    # We might need to complete this state before the next operation
     A.states[State.name] = State
 end
 
@@ -104,6 +107,9 @@ end
 
 # adding a new symbol to the alphabet of the automaton
 function addSymbol!(A::automaton, Symbol::Char)
+
+    # What if the symbol already exists?
+    # We might need to complete the automaton before the next operation
     push!(A.alphabet, Symbol)
 end
 
