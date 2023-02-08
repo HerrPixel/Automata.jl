@@ -1,5 +1,6 @@
 module Automata
 
-greet() = print("Hello World!")
+include("Automaton.jl")
+include("OperationsOnAutomata.jl")
 
 end # module Automata
