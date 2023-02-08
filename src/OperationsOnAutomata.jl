@@ -80,3 +80,42 @@ function complement!(A::automaton)
         addTerminalState!(A, s)
     end
 end
+
+# returns true if the automaton has a reachable loop, false otherwise
+# currently this does not return the states of the loop
+function hasLoop(A::automaton)
+
+    # Implementation of recursive DFS via function call stack
+    function DFS(currentState::state, currentStack::Stack{state}, visitedStates::Set{state})
+        # for each neighbour, we traverse deeper
+        for nextState in values(currentState.neighbours)
+
+            # if we found that neighbour in the current branch already, we found a cycle
+            if nextState ∈ visitedStates
+                return true
+            end
+
+            # otherwise we traverse deeper
+            push!(currentStack, nextState)
+            push!(visitedStates, nextState)
+
+            # if we find a cycle deeper down, return that value 
+            if DFS(nextState, currentStack, visitedStates)
+                return true
+            end
+            pop!(currentStack)
+            delete!(visitedStates, nextState)
+        end
+
+        # otherwise return this branch as cycleless
+        return false
+    end
+
+    visitedStates = Set{state}()
+    s = Stack{state}()
+
+    push!(visitedStates, A.initialState)
+    push!(s, A.initialState)
+
+    return DFS(A.initialState, s, visitedStates)
+end
