@@ -83,6 +83,13 @@ function addTerminalState!(A::automaton, TerminalState::state)
     push!(A.acceptingStates, TerminalState)
 end
 
+removeTerminalState!(A::automaton, TerminalState::AbstractString) = removeTerminalState!(A, A.states[TerminalState])
+
+
+function removeTerminalState!(A::automaton, TerminalState::state)
+    delete!(A.acceptingStates, TerminalState)
+end
+
 # adding a new edge to the automaton
 function addEdge!(A::automaton, StartingState::AbstractString, Symbol::Char, TargetState::AbstractString)
     start = get(A.states, StartingState, state(StartingState))

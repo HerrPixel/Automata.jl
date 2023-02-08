@@ -44,7 +44,7 @@ function reduceNonAccessibleStates!(A::automaton)
     # finally, all unreached nodes are removed from the automaton.
     # if they are referenced elsewhere, they survive.
     # Otherwise the next Garbage Collection cycle catches them.
-    for s in A.states
+    for s in values(A.states)
         if s ∉ reachableStates
             removeState!(A, s)
         end
@@ -63,4 +63,20 @@ function isAccepted(A::automaton, w::AbstractString)
     end
 
     return s ∈ A.acceptingStates
+end
+
+function complement!(A::automaton)
+
+    # maybe add reduceNonAccessibleStates(A) here
+
+    newTerminalStates = Set(values(A.states))
+
+    for s in A.acceptingStates
+        delete!(newTerminalStates, s)
+        removeTerminalState!(A, s)
+    end
+
+    for s in newTerminalStates
+        addTerminalState!(A, s)
+    end
 end
