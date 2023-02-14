@@ -21,7 +21,7 @@ mutable struct automaton
     # Constructor for an empty automaton
     function automaton()
         s = state("epsilon")
-        return new([s], Dict{Char,Int}(), s, Set{state}())
+        return new(Dict("epsilon" => s), Set{Char}(), s, Set{state}())
     end
 
     # Constructor for an automaton based on states supplied by strings
@@ -121,7 +121,7 @@ function addSymbol!(A::automaton, Symbol::Char)
 end
 
 # returns the state reached by walking the edge labeled by Symbol from the supplied state
-function walkEdge(state::State, Symbol::Char)
+function walkEdge(State::state, Symbol::Char)
     # If the state does not have an entry for that symbol, this will fail.
     # We need to fix this or change it in the future somehow
     return state.neighbours[Symbol]
