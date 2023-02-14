@@ -1,7 +1,7 @@
 # A single state in an automaton.
 # To reduce memory usage, this does not have any reference to the automaton it belongs to.
 mutable struct state
-    name::AbstractString
+    name::String
     neighbours::Dict{Char,state}
 
     # constructor for a state.
@@ -13,7 +13,7 @@ end
 
 # A finite deterministic automaton 
 mutable struct automaton
-    states::Dict{AbstractString,state} # Maybe a better datastructure to store nodes
+    states::Dict{String,state} # Maybe a better datastructure to store nodes
     alphabet::Set{Char}
     initialState::state
     acceptingStates::Set{state}
@@ -25,7 +25,7 @@ mutable struct automaton
     end
 
     # Constructor for an automaton based on states supplied by strings
-    function automaton(States::Vector{AbstractString}, Alphabet::Vector{Char}, InitialState::AbstractString, AcceptingStates::Vector{AbstractString}, Edges::Vector{Tuple{AbstractString,Char,AbstractString}}=[])
+    function automaton(States::Vector{<:AbstractString}, Alphabet::Vector{Char}, InitialState::AbstractString, AcceptingStates::Vector{<:AbstractString}, Edges::Vector{<:Tuple{<:AbstractString,Char,<:AbstractString}}=[])
 
         @assert InitialState ∈ States "Initial state $InitialState is not a state"
         for s in AcceptingStates
@@ -38,7 +38,7 @@ mutable struct automaton
             @assert b ∈ States "State $b from edge ($a,$x,$b) is not a state"
         end
 
-        states = Dict{AbstractString,state}()
+        states = Dict{String,state}()
 
         for stateName in States
             s = state(stateName)
@@ -57,7 +57,7 @@ mutable struct automaton
             start.neighbours[x] = target
         end
 
-        return new(states, Set{Char}(Alphabet), state[InitialState], acceptingStates)
+        return new(states, Set{Char}(Alphabet), states[InitialState], acceptingStates)
     end
 end
 
