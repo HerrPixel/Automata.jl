@@ -62,15 +62,47 @@ mutable struct automaton
 end
 
 function Base.:(==)(a::state, b::state)
-    return a.name == b.name && a.neighbours == b.neighbours
+    aNeighbours = Set(values(a.neighbours))
+    bNeighbours = Set(values(b.neighbours))
+    if length(aNeighbours) != length(bNeighbours)
+        return false
+    end
+    for s in aNeighbours
+        hasNamedNeighbour = false
+        for t in bNeighbours
+            if s.name == t.name
+                hasNamedNeighbour = true
+            end
+        end
+
+        if !hasNamedNeighbour
+            return false
+        end
+    end
+
+    return a.name == b.name
 end
 
 function semanticEquals(a::state, b::state)
     for c in keys(a.neighbours)
-        if !haskey(b, c)
+        if !haskey(b.neighbours, c)
             return false
         end
+
+        for d in keys(a.neighbours)
+            if c == d
+                continue
+            end
+            if a.neighbours[c] == a.neighbours[d]
+                if !haskey(b.neighbours, d)
+                    return false
+                elseif b.neighbours[c] != b.neighbours[d]
+                    return false
+                end
+            end
+        end
     end
+
     return true
 end
 
@@ -105,6 +137,9 @@ function Base.:(==)(a::automaton, b::automaton)
 end
 
 #=
+
+this is basically graph isomorphism
+
 function semanticEquals(a::automaton, b::automaton)
     if a.alphabet != b.alphabet
         return false
