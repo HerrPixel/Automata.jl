@@ -75,7 +75,33 @@ function semanticEquals(a::state, b::state)
 end
 
 function Base.:(==)(a::automaton, b::automaton)
-    return a.states == b.states && a.alphabet == b.alphabet && a.initialState == b.initialState && a.acceptingStates == b.acceptingStates
+    if length(a.states) != length(b.states)
+        return false
+    end
+
+    for s in keys(a.states)
+        if !haskey(b.states, s)
+            return false
+        end
+    end
+
+    if length(a.acceptingStates) != length(b.acceptingStates)
+        return false
+    end
+
+    for s in a.acceptingStates
+        hasTerminalState = false
+        for t in b.acceptingStates
+            if s.name == t.name
+                hasTerminalState = true
+            end
+        end
+        if !hasTerminalState
+            return false
+        end
+    end
+
+    return a.alphabet == b.alphabet && a.initialState.name == b.initialState.name
 end
 
 #=
