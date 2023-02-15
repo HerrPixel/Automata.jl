@@ -61,6 +61,53 @@ mutable struct automaton
     end
 end
 
+function Base.:(==)(a::state, b::state)
+    return a.name == b.name && a.neighbours == b.neighbours
+end
+
+function semanticEquals(a::state, b::state)
+    for c in keys(a.neighbours)
+        if !haskey(b, c)
+            return false
+        end
+    end
+    return true
+end
+
+function Base.:(==)(a::automaton, b::automaton)
+    return a.states == b.states && a.alphabet == b.alphabet && a.initialState == b.initialState && a.acceptingStates == b.acceptingStates
+end
+
+#=
+function semanticEquals(a::automaton, b::automaton)
+    if a.alphabet != b.alphabet
+        return false
+    end
+    q = Queue{state}()
+    p = Queue{state}()
+
+    enqueue!(q, a.initialState)
+    enqueue!(p, b.initialState)
+
+    while !isempty(q) && !isempty(p)
+        s = dequeue!(q)
+        t = dequeue!(p)
+
+        if (s ∈ a.acceptingStates && t ∉ b.acceptingStates) || (s ∉ a.acceptingStates && t ∈ b.acceptingStates)
+            return false
+        end
+        for c in a.alphabet
+            # to-do
+    end
+
+    if !isempty(q) || !isempty(p)
+        return false
+    end
+
+    return true
+end
+=#
+
 # adding a new state to the automaton
 addState!(A::automaton, State::AbstractString) = addState(A, state(State))
 
