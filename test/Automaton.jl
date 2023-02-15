@@ -31,3 +31,13 @@ end
     @test a == b
 end
 
+#= tests to add:
+- semantic equals true and false tests
+- adding terminal states not already contained in the automata
+- string and state functions are equal
+- adding edge for states not already in the automata
+- walkedge true and false test
+- is terminal 
+- removing state with existing and non-exisiting state
+- removing terminal state
+=#

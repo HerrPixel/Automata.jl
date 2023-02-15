@@ -210,3 +210,8 @@ function removeState!(A::automaton, s::state)
     delete!(A.acceptingStates, s)
     delete!(A.states, s)
 end
+
+#= methods to add
+- removing Edges
+- semantic equals for automata
+=#
