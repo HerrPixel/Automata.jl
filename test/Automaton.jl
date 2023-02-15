@@ -25,10 +25,21 @@ end
 
     @test a == b
 
-    Automata.addEdge!(a, "epsilon", 'a', "a")
+    Automata.addEdge!(a, a.initialState, 'a', s)
     b = Automata.automaton(["epsilon", "a"], ['a'], "epsilon", ["a"], [("epsilon", 'a', "a")])
 
     @test a == b
+end
+
+@testset "terminal behaviour is correct" begin
+    a = Automata.automaton()
+    s = Automata.state("a")
+
+    Automata.addState!(a, s)
+    Automata.addTerminalState!(a, s)
+
+    @test Automata.isTerminal(a, s)
+    @test !Automata.isTerminal(a, a.initialState)
 end
 
 #= tests to add:
@@ -37,7 +48,6 @@ end
 - string and state functions are equal
 - adding edge for states not already in the automata
 - walkedge true and false test
-- is terminal 
 - removing state with existing and non-exisiting state
 - removing terminal state
 =#
