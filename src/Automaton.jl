@@ -181,7 +181,8 @@ function addState!(A::automaton, State::state)
 end
 
 # adding a new terminal state to the automaton
-addTerminalState!(A::automaton, TerminalState::AbstractString) = addTerminalState(A, state(TerminalState))
+# careful if this node is already present with that name
+addTerminalState!(A::automaton, TerminalState::AbstractString) = addTerminalState!(A, state(TerminalState))
 
 # adding a new terminal state to the automaton
 function addTerminalState!(A::automaton, TerminalState::state)
@@ -192,7 +193,6 @@ function addTerminalState!(A::automaton, TerminalState::state)
 end
 
 removeTerminalState!(A::automaton, TerminalState::AbstractString) = removeTerminalState!(A, A.states[TerminalState])
-
 
 function removeTerminalState!(A::automaton, TerminalState::state)
     delete!(A.acceptingStates, TerminalState)
@@ -232,7 +232,7 @@ end
 function walkEdge(State::state, Symbol::Char)
     # If the state does not have an entry for that symbol, this will fail.
     # We need to fix this or change it in the future somehow
-    return state.neighbours[Symbol]
+    return State.neighbours[Symbol]
 end
 
 # returns true if the supplied state is terminal in the given automaton
@@ -249,4 +249,6 @@ end
 #= methods to add
 - removing Edges
 - semantic equals for automata
+- change semantic equals for states to faster version (canonical labeling depending on char numbering)
+- show function
 =#
