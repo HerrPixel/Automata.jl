@@ -42,9 +42,20 @@ end
     @test !Automata.isTerminal(a, a.initialState)
 end
 
+@testset "terminal states not already in the automaton" begin
+    a = Automata.automaton()
+    Automata.addTerminalState!(a, "end")
+    # "end" is not a state in the automata
+    # but should be added, alongside making it terminal
+
+    b = Automata.automaton(["epsilon", "end"], Vector{Char}(), "epsilon", ["end"], Vector{Tuple{String,Char,String}}())
+
+    @test a == b
+end
+
+
 #= tests to add:
 - semantic equals true and false tests
-- adding terminal states not already contained in the automata
 - string and state functions are equal
 - adding edge for states not already in the automata
 - walkedge true and false test
