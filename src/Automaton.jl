@@ -92,6 +92,10 @@ function Base.:(==)(a::state, b::state)
     if length(a.neighbours) != length(b.neighbours)
         return false
     end
+
+    # We need to check that a and b have edges labelled the same to the same named states.
+    # Since a and b have the same number of neighbours, we only need to check 
+    # that b has the same edges as a, as it can't have more.
     for (c, node) in a.neighbours
         if !haskey(b.neighbours, c)
             return false
@@ -131,6 +135,9 @@ function Base.:(==)(a::automaton, b::automaton)
         return false
     end
 
+    # We need to check that a and b have the same named accepting states.
+    # Since a and b have the same number of accepting states, we only need to check 
+    # that b has at least the same named ones as a, since it cannot have more.
     for node in a.acceptingStates
         if !haskey(b.states, node.name)
             return false
@@ -152,23 +159,35 @@ function semanticEquals(a::state, b::state)
         return false
     end
 
+    # We canonically sort the edges and neighbours in a and b by the label of their edge.
+    # We can then go through them simultaniously and check if both states have the same neighbourhood.
+    # Note that we can't just count the number of neighbours, since `a` might have two edges 
+    # going to the same neighbour and `b` only has one, so we need to check the neighbourhood connection
+    # more thoroughly. 
+
     edgesFromA = sort(collect(keys(a.neighbours)))
     edgesFromB = sort(collect(keys(b.neighbours)))
 
+    # a and b have a different set of edge labels.
     if edgesFromA != edgesFromB
         return false
     end
 
+    # for keeping track of neighbours that might be reachable with more than one edge.
     SeenBeforeInA = Set{state}()
     SeenBeforeInB = Set{state}()
 
     for c in edgesFromA
         s = a.neighbours[c]
         t = b.neighbours[c]
-        if s ∈ SeenBeforeInA && t ∈ SeenBeforeInB
-            continue
-        elseif (s ∈ SeenBeforeInA && t ∉ SeenBeforeInB) || (s ∉ SeenBeforeInA && t ∈ SeenBeforeInB)
+
+        if (s ∈ SeenBeforeInA) != (t ∈ SeenBeforeInB)
+            # one state has multiple edges going to this neighbour, while the other does not,
+            # therefore they are not equal.
+
             return false
+        elseif s ∈ SeenBeforeInA && t ∈ SeenBeforeInB
+            continue
         else
             push!(SeenBeforeInA, s)
             push!(SeenBeforeInB, t)
@@ -185,6 +204,8 @@ end
 """
 function semanticEquals(a::automaton, b::automaton)
 
+    # this helper function gives each reachable state in the automata a canonical name.
+    # i.e. the shortest lexicographically sorted word you can use to reach this state.
     function getCanonicalNames(initialState::state, alphabet::Vector{Char})
         q = Queue{state}()
         canonicalNames = Dict{state,String}()
@@ -213,27 +234,40 @@ function semanticEquals(a::automaton, b::automaton)
         return false
     end
 
+    # We label states canonically. Then both automata should be completely equal with the new naming.
+    # To not destroy any smart labelling by users, we do not change the labels in the automata however
+    # and only keep this canonical labeling for ourselves.
     canonicalNamesInA = getCanonicalNames(a.initialState, sort(collect(a.alphabet)))
     canonicalNamesInB = getCanonicalNames(b.initialState, sort(collect(b.alphabet)))
 
+    # helper function to sort Pairs by the second entry.
     function sortBySecond(first::Pair{state,String}, second::Pair{state,String})
         return first.second < second.second
     end
 
+    # even though a dictionary might have multiple keys for the same value, in this usage, 
+    # it is a 1:1 map, so we can sort by the second entry and get unique entries no problem.
     statesInA = sort(collect(canonicalNamesInA), lt=sortBySecond)
     statesInB = sort(collect(canonicalNamesInB), lt=sortBySecond)
 
+    # we then compare each state of both automata.
+    # since our label is canonical, independent of former naming.
+    # we can go through our sorted list of labels and both entries should be the same.
     for i in eachindex(statesInA)
         (s, Sname) = statesInA[i]
         (t, Tname) = statesInB[i]
 
+        # the states have different terminal behaviour
         if (s ∈ a.acceptingStates) != (t ∈ b.acceptingStates)
             return false
         end
 
+        # our labels are canonical and should therefore be the same.
         if Sname != Tname
             return false
         end
+
+        # the neighbourhood should also be the same.
         for (c, x) in s.neighbours
             if !haskey(t, c)
                 return false
