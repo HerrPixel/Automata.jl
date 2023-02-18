@@ -53,6 +53,11 @@ end
     @test a == b
 end
 
+@testset "edges with states not already in the automaton" begin
+    a = Automata.automaton()
+
+end
+
 
 #= tests to add:
 - semantic equals true and false tests
