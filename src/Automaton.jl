@@ -198,7 +198,12 @@ function semanticEquals(a::automaton, b::automaton)
 
     for i in eachindex(statesInA)
         (s, Sname) = statesInA[i]
-        (s, Tname) = statesInB[i]
+        (t, Tname) = statesInB[i]
+
+        if (s ∈ a.acceptingStates) != (t ∈ b.acceptingStates)
+            return false
+        end
+
         if Sname != Tname
             return false
         end
