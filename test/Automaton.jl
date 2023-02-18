@@ -1,11 +1,53 @@
-@testset "Shorthand constructors are equivalent" begin
+@testset "Constructors" begin
+    #=
+        Both automata should be:
+          ┌─┐
+        ->│ε│
+          └─┘
+    =#
     a = Automata.automaton()
     b = Automata.automaton(["epsilon"], Vector{Char}(), "epsilon", Vector{String}(), Vector{Tuple{String,Char,String}}())
 
     @test a == b
 end
 
-@testset "building automata is correct" begin
+@testset "Equality Tests" begin
+    #=
+        Both automata should be:
+          ┌─┐
+        ->│ε│
+          └─┘
+    =#
+    a = Automata.automaton(["epsilon"], Vector{Char}(), "epsilon", Vector{String}(), Vector{Tuple{String,Char,String}}())
+    b = Automata.automaton(["epsilon"], Vector{Char}(), "epsilon", Vector{String}(), Vector{Tuple{String,Char,String}}())
+
+    @test a == b
+
+    #=
+        Now a is:
+          ┌───┐
+        ->│foo│
+          └───┘
+    =#
+    a = Automata.automaton(["foo"], Vector{Char}(), "foo", Vector{String}(), Vector{Tuple{String,Char,String}}())
+
+    @test a != b
+    @test semanticEquals(a, b)
+
+    #=
+        Now a is:
+          ┌───┐        ┌───┐
+        ->│foo│--(a)-->│bar│
+          └───┘        └───┘
+    =#
+
+    a = Automata.automaton(["foo", "bar"], ['a'], "foo", Vector{String}(), [("foo", 'a', "bar")])
+
+    @test a != b
+    @test !semanticEquals(a, b)
+end
+
+@testset "Building automata" begin
     a = Automata.automaton()
     s = Automata.state("a")
 
@@ -31,7 +73,7 @@ end
     @test a == b
 end
 
-@testset "terminal behaviour is correct" begin
+@testset "Terminal behaviour is correct" begin
     a = Automata.automaton()
     s = Automata.state("a")
 
