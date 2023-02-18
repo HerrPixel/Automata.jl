@@ -80,12 +80,20 @@ function Base.:(==)(a::state, b::state)
 end
 
 function Base.:(==)(a::automaton, b::automaton)
+    if a.alphabet != b.alphabet
+        return false
+    end
+
+    if a.initialState.name != b.initialState.name
+        return false
+    end
+
     if length(a.states) != length(b.states)
         return false
     end
 
-    for s in keys(a.states)
-        if !haskey(b.states, s)
+    for (s,_) in a.states
+        if !haskey(b.states,s)
             return false
         end
     end
@@ -94,19 +102,15 @@ function Base.:(==)(a::automaton, b::automaton)
         return false
     end
 
-    for s in a.acceptingStates
-        hasTerminalState = false
-        for t in b.acceptingStates
-            if s.name == t.name
-                hasTerminalState = true
-            end
-        end
-        if !hasTerminalState
+    for node in a.acceptingStates
+        if !haskey(b.states,node.name)
+            return false
+        elseif b.states[node.name].name != node.name
             return false
         end
     end
 
-    return a.alphabet == b.alphabet && a.initialState.name == b.initialState.name
+    return true
 end
 
 function semanticEquals(a::state, b::state)
