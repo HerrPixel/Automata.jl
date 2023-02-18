@@ -102,7 +102,6 @@ end
 
 
 #= tests to add:
-- semantic equals true and false tests
 - string and state functions are equal
 - adding edge for states not already in the automata
 - walkedge true and false test
