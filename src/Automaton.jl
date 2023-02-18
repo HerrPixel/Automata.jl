@@ -4,33 +4,40 @@
 #                            #
 ##############################
 
-# A single state in an automaton.
-# To reduce memory usage, this does not have any reference to the automaton it belongs to.
+"""
+    state(Name::AbstractString, Neighbours::Dict{Char,state}=())
+
+A named state with optional neighbours.
+"""
 mutable struct state
     name::String
     neighbours::Dict{Char,state}
 
-    # constructor for a state.
-    # You need to supply a name and can optionally also supply a dictionary of neighbours reachable by symbols
     function state(Name::AbstractString, Neighbours::Dict{Char,state}=Dict{Char,state}())
         return new(Name, Neighbours)
     end
 end
 
-# A finite deterministic automaton 
+"""
+    automaton()
+    automaton(States,Alphabet,InitialState,AcceptingStates,Edges=[])
+    automaton(States::Vector{<:AbstractString},Alphabet::Vector{Char},InitialState::AbstractString, AcceptingStates::Vector{<:AbstractString}, Edges::Vector{<:Tuple{<:AbstractString,Char,<:AbstractString}}=[])
+
+A finite deterministic automaton given by states, labelled edges, an initial state and accepting states. 
+"""
 mutable struct automaton
-    states::Dict{String,state} # Maybe a better datastructure to store nodes
+    states::Dict{String,state}
     alphabet::Set{Char}
     initialState::state
     acceptingStates::Set{state}
 
-    # Constructor for an empty automaton
+    # replace assertions by errors
+
     function automaton()
         s = state("epsilon")
         return new(Dict("epsilon" => s), Set{Char}(), s, Set{state}())
     end
 
-    # Constructor for an automaton based on states supplied by strings
     function automaton(States::Vector{<:AbstractString}, Alphabet::Vector{Char}, InitialState::AbstractString, AcceptingStates::Vector{<:AbstractString}, Edges::Vector{<:Tuple{<:AbstractString,Char,<:AbstractString}}=[])
 
         @assert InitialState ∈ States "Initial state $InitialState is not a state"
@@ -73,6 +80,11 @@ end
 #                            #
 ##############################
 
+"""
+    ==(a::state,b::state)
+
+`true` if `a` is equal to `b`, i.e. same name and neighbourhood, and `false` otherwise.
+"""
 function Base.:(==)(a::state, b::state)
     if a.name != b.name
         return false
@@ -91,6 +103,11 @@ function Base.:(==)(a::state, b::state)
     return true
 end
 
+"""
+    ==(a::automaton,b::automaton)
+
+`true` if `a` is equal to `b`, i.e. same alphabet, states, initial states, terminal states and edges, and `false` otherwise.
+"""
 function Base.:(==)(a::automaton, b::automaton)
     if a.alphabet != b.alphabet
         return false
@@ -125,6 +142,11 @@ function Base.:(==)(a::automaton, b::automaton)
     return true
 end
 
+"""
+    semanticEquals(a::state, b::state)
+
+`true` if `a` is equal to `b` up to renaming itself and its neighbourhood, `false` otherwise.
+"""
 function semanticEquals(a::state, b::state)
     if length(a.neighbours) != length(b.neighbours)
         return false
@@ -156,6 +178,11 @@ function semanticEquals(a::state, b::state)
     return true
 end
 
+"""
+    semanticEquals(a::state, b::state)
+
+`true` if `a` is equal to `b` up to renaming states, `false` otherwise.
+"""
 function semanticEquals(a::automaton, b::automaton)
 
     function getCanonicalNames(initialState::state, alphabet::Vector{Char})
@@ -327,7 +354,6 @@ end
 
 #= methods to add
 - removing Edges
-- semantic equals for automata
-- change semantic equals for states to faster version (canonical labeling depending on char numbering)
 - show function
+- throw errors in constructor
 =#
