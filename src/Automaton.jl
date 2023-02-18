@@ -125,63 +125,96 @@ function Base.:(==)(a::automaton, b::automaton)
     return true
 end
 
-#=
 function semanticEquals(a::state, b::state)
-    for c in keys(a.neighbours)
-        if !haskey(b.neighbours, c)
-            return false
-        end
+    if length(a.neighbours) != length(b.neighbours)
+        return false
+    end
 
-        for d in keys(a.neighbours)
-            if c == d
-                continue
-            end
-            if a.neighbours[c] == a.neighbours[d]
-                if !haskey(b.neighbours, d)
-                    return false
-                elseif b.neighbours[c] != b.neighbours[d]
-                    return false
+    edgesFromA = sort(collect(keys(a.neighbours)))
+    edgesFromB = sort(collect(keys(b.neighbours)))
+
+    if edgesFromA != edgesFromB
+        return false
+    end
+
+    SeenBeforeInA = Set{state}()
+    SeenBeforeInB = Set{state}()
+
+    for c in edgesFromA
+        s = a.neighbours[c]
+        t = b.neighbours[c]
+        if s ∈ SeenBeforeInA && t ∈ SeenBeforeInB
+            continue
+        elseif (s ∈ SeenBeforeInA && t ∉ SeenBeforeInB) || (s ∉ SeenBeforeInA && t ∈ SeenBeforeInB)
+            return false
+        else
+            push!(SeenBeforeInA, s)
+            push!(SeenBeforeInB, t)
+        end
+    end
+
+    return true
+end
+
+function semanticEquals(a::automaton, b::automaton)
+
+    function getCanonicalNames(initialState::state, alphabet::Vector{Char})
+        q = Queue{state}()
+        canonicalNames = Dict{state,String}()
+
+        enqueue!(q, initialState)
+        canonicalNames[initialState] = ""
+
+        while !isempty(q)
+            s = dequeue!(q)
+
+            for c in alphabet
+                if haskey(s.neighbours, c)
+                    t = s.neighbours[c]
+                    enqueue!(q, t)
+
+                    if !haskey(canonicalNames, t)
+                        canonicalNames[t] = canonicalNames[s] * c
+                    end
                 end
             end
         end
+        return canonicalNames
     end
 
-    return true
-end
-
-=#
-#=
-
-this is basically graph isomorphism
-
-function semanticEquals(a::automaton, b::automaton)
     if a.alphabet != b.alphabet
         return false
     end
-    q = Queue{state}()
-    p = Queue{state}()
 
-    enqueue!(q, a.initialState)
-    enqueue!(p, b.initialState)
+    canonicalNamesInA = getCanonicalNames(a.initialState, sort(collect(a.alphabet)))
+    canonicalNamesInB = getCanonicalNames(b.initialState, sort(collect(b.alphabet)))
 
-    while !isempty(q) && !isempty(p)
-        s = dequeue!(q)
-        t = dequeue!(p)
-
-        if (s ∈ a.acceptingStates && t ∉ b.acceptingStates) || (s ∉ a.acceptingStates && t ∈ b.acceptingStates)
-            return false
-        end
-        for c in a.alphabet
-            # to-do
+    function sortBySecond(first::Pair{state,String}, second::Pair{state,String})
+        return first.second < second.second
     end
 
-    if !isempty(q) || !isempty(p)
-        return false
+    statesInA = sort(collect(canonicalNamesInA), lt=sortBySecond)
+    statesInB = sort(collect(canonicalNamesInB), lt=sortBySecond)
+
+    for i in eachindex(statesInA)
+        (s, Sname) = statesInA[i]
+        (s, Tname) = statesInB[i]
+        if Sname != Tname
+            return false
+        end
+        for (c, x) in s.neighbours
+            if !haskey(t, c)
+                return false
+            end
+
+            if canonicalNamesInA[x] != canonicalNames[t.neighbours[c]]
+                return false
+            end
+        end
     end
 
     return true
 end
-=#
 
 ##############################
 #                            #
