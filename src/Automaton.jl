@@ -1,3 +1,9 @@
+##############################
+#                            #
+#     Struct Definitions     #
+#                            #
+##############################
+
 # A single state in an automaton.
 # To reduce memory usage, this does not have any reference to the automaton it belongs to.
 mutable struct state
@@ -61,6 +67,12 @@ mutable struct automaton
     end
 end
 
+##############################
+#                            #
+#       Equality Tests       #
+#                            #
+##############################
+
 function Base.:(==)(a::state, b::state)
     if a.name != b.name
         return false
@@ -68,10 +80,10 @@ function Base.:(==)(a::state, b::state)
     if length(a.neighbours) != length(b.neighbours)
         return false
     end
-    for (c,node) in a.neighbours
-        if !haskey(b.neighbours,c)
+    for (c, node) in a.neighbours
+        if !haskey(b.neighbours, c)
             return false
-        else if node.name != b.neighbours[c].name
+        elseif node.name != b.neighbours[c].name
             return false
         end
     end
@@ -92,8 +104,8 @@ function Base.:(==)(a::automaton, b::automaton)
         return false
     end
 
-    for (s,_) in a.states
-        if !haskey(b.states,s)
+    for (s, _) in a.states
+        if !haskey(b.states, s)
             return false
         end
     end
@@ -103,7 +115,7 @@ function Base.:(==)(a::automaton, b::automaton)
     end
 
     for node in a.acceptingStates
-        if !haskey(b.states,node.name)
+        if !haskey(b.states, node.name)
             return false
         elseif b.states[node.name].name != node.name
             return false
@@ -113,6 +125,7 @@ function Base.:(==)(a::automaton, b::automaton)
     return true
 end
 
+#=
 function semanticEquals(a::state, b::state)
     for c in keys(a.neighbours)
         if !haskey(b.neighbours, c)
@@ -136,6 +149,7 @@ function semanticEquals(a::state, b::state)
     return true
 end
 
+=#
 #=
 
 this is basically graph isomorphism
@@ -169,14 +183,23 @@ function semanticEquals(a::automaton, b::automaton)
 end
 =#
 
+##############################
+#                            #
+#        Adding Things       #
+#                            #
+##############################
+
 # adding a new state to the automaton
-addState!(A::automaton, State::AbstractString) = addState(A, state(State))
+function addState!(A::automaton, State::AbstractString)
+    if haskey(A.states, State)
+        return
+    else
+        addState!(A, state(State))
+    end
+end
 
 # adding a new state to the automaton
 function addState!(A::automaton, State::state)
-
-    # What if the state already exists?
-    # We might need to complete this state before the next operation
     A.states[State.name] = State
 end
 
@@ -190,12 +213,6 @@ function addTerminalState!(A::automaton, TerminalState::state)
         addState!(A, TerminalState)
     end
     push!(A.acceptingStates, TerminalState)
-end
-
-removeTerminalState!(A::automaton, TerminalState::AbstractString) = removeTerminalState!(A, A.states[TerminalState])
-
-function removeTerminalState!(A::automaton, TerminalState::state)
-    delete!(A.acceptingStates, TerminalState)
 end
 
 # adding a new edge to the automaton
@@ -228,22 +245,46 @@ function addSymbol!(A::automaton, Symbol::Char)
     push!(A.alphabet, Symbol)
 end
 
-# returns the state reached by walking the edge labeled by Symbol from the supplied state
-function walkEdge(State::state, Symbol::Char)
-    # If the state does not have an entry for that symbol, this will fail.
-    # We need to fix this or change it in the future somehow
-    return State.neighbours[Symbol]
+##############################
+#                            #
+#       Removing Things      #
+#                            #
+##############################
+
+# removes a state from an automaton
+function removeState!(A::automaton, s::state)
+    delete!(A.acceptingStates, s)
+    delete!(A.states, s)
 end
+
+removeTerminalState!(A::automaton, TerminalState::AbstractString) = removeTerminalState!(A, A.states[TerminalState])
+
+function removeTerminalState!(A::automaton, TerminalState::state)
+    delete!(A.acceptingStates, TerminalState)
+end
+
+##############################
+#                            #
+#           Getter           #
+#                            #
+##############################
 
 # returns true if the supplied state is terminal in the given automaton
 function isTerminal(A::automaton, s::state)
     return s ∈ A.acceptingStates
 end
 
-# removes a state from an automaton
-function removeState!(A::automaton, s::state)
-    delete!(A.acceptingStates, s)
-    delete!(A.states, s)
+##############################
+#                            #
+#        Miscellaneous       #
+#                            #
+##############################
+
+# returns the state reached by walking the edge labeled by Symbol from the supplied state
+function walkEdge(State::state, Symbol::Char)
+    # If the state does not have an entry for that symbol, this will fail.
+    # We need to fix this or change it in the future somehow
+    return State.neighbours[Symbol]
 end
 
 #= methods to add
