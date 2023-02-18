@@ -62,44 +62,17 @@ mutable struct automaton
 end
 
 function Base.:(==)(a::state, b::state)
-    aNeighbours = Set(values(a.neighbours))
-    bNeighbours = Set(values(b.neighbours))
-    if length(aNeighbours) != length(bNeighbours)
+    if a.name != b.name
         return false
     end
-    for s in aNeighbours
-        hasNamedNeighbour = false
-        for t in bNeighbours
-            if s.name == t.name
-                hasNamedNeighbour = true
-            end
-        end
-
-        if !hasNamedNeighbour
-            return false
-        end
+    if length(a.neighbours) != length(b.neighbours)
+        return false
     end
-
-    return a.name == b.name
-end
-
-function semanticEquals(a::state, b::state)
-    for c in keys(a.neighbours)
-        if !haskey(b.neighbours, c)
+    for (c,node) in a.neighbours
+        if !haskey(b.neighbours,c)
             return false
-        end
-
-        for d in keys(a.neighbours)
-            if c == d
-                continue
-            end
-            if a.neighbours[c] == a.neighbours[d]
-                if !haskey(b.neighbours, d)
-                    return false
-                elseif b.neighbours[c] != b.neighbours[d]
-                    return false
-                end
-            end
+        else if node.name != b.neighbours[c].name
+            return false
         end
     end
 
@@ -134,6 +107,29 @@ function Base.:(==)(a::automaton, b::automaton)
     end
 
     return a.alphabet == b.alphabet && a.initialState.name == b.initialState.name
+end
+
+function semanticEquals(a::state, b::state)
+    for c in keys(a.neighbours)
+        if !haskey(b.neighbours, c)
+            return false
+        end
+
+        for d in keys(a.neighbours)
+            if c == d
+                continue
+            end
+            if a.neighbours[c] == a.neighbours[d]
+                if !haskey(b.neighbours, d)
+                    return false
+                elseif b.neighbours[c] != b.neighbours[d]
+                    return false
+                end
+            end
+        end
+    end
+
+    return true
 end
 
 #=
