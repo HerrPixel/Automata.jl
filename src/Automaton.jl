@@ -307,7 +307,11 @@ end
 #                            #
 ##############################
 
-# adding a new state to the automaton
+"""
+    addState!(A::automaton, State::AbstractString)
+    addState!(A::automaton, State::state)
+Add a state to the given automaton.
+"""
 function addState!(A::automaton, State::AbstractString)
     if haskey(A.states, State)
         return
@@ -316,18 +320,19 @@ function addState!(A::automaton, State::AbstractString)
     end
 end
 
-# adding a new state to the automaton
 function addState!(A::automaton, State::state)
     A.states[State.name] = State
 end
 
-# adding a new terminal state to the automaton
-# careful if this node is already present with that name
+"""
+    addTerminalState!(A::automaton, TerminalState::AbstractString)
+    addTerminalState!(A::automaton, TerminalState::state)
+Add a terminal state to the given automaton. If the state already exists, it is made terminal.
+"""
 function addTerminalState!(A::automaton, TerminalState::AbstractString)
     addTerminalState!(A, get(A.states, TerminalState, state(TerminalState)))
 end
 
-# adding a new terminal state to the automaton
 function addTerminalState!(A::automaton, TerminalState::state)
     if !haskey(A.states, TerminalState.name)
         addState!(A, TerminalState)
@@ -335,14 +340,18 @@ function addTerminalState!(A::automaton, TerminalState::state)
     push!(A.acceptingStates, TerminalState)
 end
 
-# adding a new edge to the automaton
+"""
+    addEdge!(A::automaton, StartingState::AbstractString, Symbol::Char, TargetState::AbstractString)
+    addEdge!(A::automaton, StartingState::state, Symbol::Char, TargetState::state)
+Add a new edge to the automaton, creates new symbols and states if they do not already exist.
+"""
 function addEdge!(A::automaton, StartingState::AbstractString, Symbol::Char, TargetState::AbstractString)
+    # create new states if the automaton does not already have them
     start = get(A.states, StartingState, state(StartingState))
     target = get(A.states, TargetState, state(TargetState))
     addEdge!(A, start, Symbol, target)
 end
 
-# adding a new edge to the automaton
 function addEdge!(A::automaton, StartingState::state, Symbol::Char, TargetState::state)
     if !haskey(A.states, StartingState.name)
         addState!(A, StartingState)
@@ -357,11 +366,12 @@ function addEdge!(A::automaton, StartingState::state, Symbol::Char, TargetState:
     StartingState.neighbours[Symbol] = TargetState
 end
 
-# adding a new symbol to the alphabet of the automaton
+"""
+    addSymbol!(A::automaton, Symbol::Char)
+Add a symbol to the automatons alphabet.
+"""
 function addSymbol!(A::automaton, Symbol::Char)
 
-    # What if the symbol already exists?
-    # We might need to complete the automaton before the next operation
     push!(A.alphabet, Symbol)
 end
 
