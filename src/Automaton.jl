@@ -133,9 +133,20 @@ function Base.:(==)(a::automaton, b::automaton)
         return false
     end
 
-    for (s, _) in a.states
-        if !haskey(b.states, s)
+    for (s_name, s_state) in a.states
+        if !haskey(b.states, s_name)
             return false
+        else
+            t_state = b.states[s_name]
+        end
+
+        # tests for the same edges
+        for (c, x) in s_state.neighbours
+            if !haskey(t_state.neighbours, c)
+                return false
+            elseif t_state.neighbours[c].name != x.name
+                return false
+            end
         end
     end
 
@@ -312,7 +323,9 @@ end
 
 # adding a new terminal state to the automaton
 # careful if this node is already present with that name
-addTerminalState!(A::automaton, TerminalState::AbstractString) = addTerminalState!(A, state(TerminalState))
+function addTerminalState!(A::automaton, TerminalState::AbstractString)
+    addTerminalState!(A, get(A.states, TerminalState, state(TerminalState)))
+end
 
 # adding a new terminal state to the automaton
 function addTerminalState!(A::automaton, TerminalState::state)
