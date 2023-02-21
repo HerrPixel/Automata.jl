@@ -126,29 +126,206 @@ end
 end
 
 @testset "Building automata" begin
-    a = Automata.automaton()
-    s = Automata.state("a")
 
-    Automata.addState!(a, s)
+    @testset "adding states" begin
+        #=
+            Both automata should be:
+              ┌─┐
+            ->│ε│
+              └─┘
+        =#
+        a = automaton()
+        b = automaton()
 
-    b = Automata.automaton(["epsilon", "a"], Vector{Char}(), "epsilon", Vector{String}(), Vector{Tuple{String,Char,String}}())
+        #=
+            Now a is 
+              ┌─┐  ┌─┐
+            ->│ε│  │c│
+              └─┘  └─┘
+        =#
+        addState!(a, "c")
 
-    @test a == b
+        @test a != b
 
-    Automata.addTerminalState!(a, s)
-    b = Automata.automaton(["epsilon", "a"], Vector{Char}(), "epsilon", ["a"], Vector{Tuple{String,Char,String}}())
+        c = state("c")
 
-    @test a == b
+        #=
+            Now b is also: 
+              ┌─┐  ┌─┐
+            ->│ε│  │c│
+              └─┘  └─┘
+        =#
 
-    Automata.addSymbol!(a, 'a')
-    b = Automata.automaton(["epsilon", "a"], ['a'], "epsilon", ["a"], Vector{Tuple{String,Char,String}}())
+        addState!(b, c)
 
-    @test a == b
+        # this also tests the equality of the two addState! functions
+        @test a == b
+    end
 
-    Automata.addEdge!(a, a.initialState, 'a', s)
-    b = Automata.automaton(["epsilon", "a"], ['a'], "epsilon", ["a"], [("epsilon", 'a', "a")])
+    @testset "adding terminal states" begin
+        #=
+            Both automata should be:
+              ┌─┐
+            ->│ε│
+              └─┘
+        =#
+        a = automaton()
+        b = automaton()
 
-    @test a == b
+        #=
+            Now a is 
+              ┌─┐  ╔═╗
+            ->│ε│  ║c║
+              └─┘  ╚═╝
+        =#
+        addTerminalState!(a, "c")
+
+        @test a != b
+
+        c = state("c")
+
+        #=
+            Now b is also:
+              ┌─┐  ╔═╗
+            ->│ε│  ║c║
+              └─┘  ╚═╝
+        =#
+        addTerminalState!(b, c) # this also tests the equality of the two functions
+
+        @test a == b
+
+        #=
+            Now a is:
+              ╔═╗  ╔═╗
+            ->║ε║  ║c║
+              ╚═╝  ╚═╝
+        =#
+        addTerminalState!(a, "epsilon") # this is already a state in a
+
+        @test a != b
+
+        #=
+            Now b is also:
+              ╔═╗  ╔═╗
+            ->║ε║  ║c║
+              ╚═╝  ╚═╝
+        =#
+        epsilon = b.initialState
+        addTerminalState!(b, epsilon) # this is already a state in b
+        # this also tests the equality of the two functions
+
+        @test a == b
+    end
+
+    @testset "adding Edges" begin
+        #=
+            Both automata should be:
+              ┌─┐
+            ->│ε│
+              └─┘
+        =#
+        a = automaton()
+        b = automaton()
+
+        #=
+            Now a is:
+              ┌─┐ ─┐
+            ->│ε│ (a)
+              └─┘ <┘
+        =#
+        addSymbol!(a, 'a')
+        addSymbol!(b, 'a')
+        addEdge!(a, "epsilon", 'a', "epsilon")
+
+        @test a != b
+
+        #=
+            Now b is:
+              ┌─┐ ─┐
+            ->│ε│ (a)
+              └─┘ <┘
+        =#
+        epsilon = b.initialState
+        addEdge!(b, epsilon, 'a', epsilon)
+
+        @test a == b # this also tests the equality of both functions
+
+        addSymbol!(a, 'b')
+        addSymbol!(b, 'b')
+
+        #=
+            Now a is:
+              ┌─┐ ─┬─(b)─> ┌─┐
+            ->│ε│ (a)      │b│
+              └─┘ <┘       └─┘
+        =#
+        addEdge!(a, "epsilon", 'b', "b") # b does not exist in the automata
+
+        @test a != b
+
+        #=
+            Now b is also:
+              ┌─┐ ─┬─(b)─> ┌─┐
+            ->│ε│ (a)      │b│
+              └─┘ <┘       └─┘
+        =#
+        b_state = state("b")
+        addEdge!(b, epsilon, 'b', b_state) # this also tests the equality of both functions
+
+        @test a == b
+
+        #=
+            Now a is:
+              ┌─┐ ─┬─(b)─> ┌─┐        ┌─┐
+            ->│ε│ (a)      │b│ <─(a)─ │c│
+              └─┘ <┘       └─┘        └─┘
+        =#
+        addEdge!(a, "c", 'a', "b") # c is not a state in the automata
+
+        @test a != b
+
+        #=
+            Now b is also:
+              ┌─┐ ─┬─(b)─> ┌─┐        ┌─┐
+            ->│ε│ (a)      │b│ <─(a)─ │c│
+              └─┘ <┘       └─┘        └─┘
+        =#
+        c = state("c")
+        addEdge!(b, c, 'a', b_state)
+
+        @test a == b # tests the equality of both function signatures
+
+        #=
+            Now a is:
+              ┌─┐ ─┬─(b)─> ┌─┐ <─(a)─ ┌─┐
+            ->│ε│ (a)      │b│        │c│
+              └─┘ <┘       └─┘ <─(c)─ └─┘
+        =#
+        addEdge!(a, "c", 'c', "b") # c is not a symbol of the automata
+
+        @test a != b
+
+        #=
+            Now b is also:
+              ┌─┐ ─┬─(b)─> ┌─┐ <─(a)─ ┌─┐
+            ->│ε│ (a)      │b│        │c│
+              └─┘ <┘       └─┘ <─(c)─ └─┘
+        =#
+        addEdge!(b, c, 'c', b_state)
+
+        @test a == b # tests the equality of both function signatures
+    end
+
+    @testset "adding Symbols" begin
+        a = automaton()
+        b = automaton()
+
+        @test a == b
+
+        addSymbol!(a, 'a')
+
+        @test a != b
+    end
 end
 
 @testset "Terminal behaviour is correct" begin
