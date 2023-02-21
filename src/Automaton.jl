@@ -38,7 +38,7 @@ mutable struct automaton
         return new(Dict("epsilon" => s), Set{Char}(), s, Set{state}())
     end
 
-    function automaton(States::Vector{<:AbstractString}, Alphabet::Vector{Char}, InitialState::AbstractString, AcceptingStates::Vector{<:AbstractString}, Edges::Vector{<:Tuple{<:AbstractString,Char,<:AbstractString}}=[])
+    function automaton(States::Vector{<:AbstractString}, Alphabet::Vector{Char}, InitialState::AbstractString, AcceptingStates::Vector{<:AbstractString}, Edges::Vector{<:Tuple{<:AbstractString,Char,<:AbstractString}}=Vector{Tuple{AbstractString,Char,AbstractString}}())
 
         if InitialState ∉ States
             throw(ArgumentError("Initial State $InitialState is not a state"))
