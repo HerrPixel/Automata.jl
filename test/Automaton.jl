@@ -1,14 +1,34 @@
 @testset "Constructors" begin
-    #=
-        Both automata should be:
-          ┌─┐
-        ->│ε│
-          └─┘
-    =#
-    a = Automata.automaton()
-    b = Automata.automaton(["epsilon"], Vector{Char}(), "epsilon", Vector{String}(), Vector{Tuple{String,Char,String}}())
+    @testset "Automata constructors are equivalent" begin
+        #=
+            Both automata should be:
+              ┌─┐
+            ->│ε│
+              └─┘
+        =#
+        a = Automata.automaton()
+        b = Automata.automaton(["epsilon"], Vector{Char}(), "epsilon", Vector{String}(), Vector{Tuple{String,Char,String}}())
 
-    @test a == b
+        @test a == b
+    end
+
+    @testset "Constructor throws error on wrong arguments" begin
+
+        # Initial state is not part of the state list
+        @test_throws ArgumentError automaton(["a"], Vector{Char}(), "b", Vector{String}())
+
+        # accepting state is not part of the state list
+        @test_throws ArgumentError automaton(["a"], Vector{Char}(), "a", ["b"])
+
+        # edge has non-existing source
+        @test_throws ArgumentError automaton(["a"], ['a'], "a", ["a"], [("b", 'a', "a")])
+
+        # edge has non-exisiting target
+        @test_throws ArgumentError automaton(["a"], ['a'], "a", ["a"], [("a", 'a', "b")])
+
+        # edge uses non-existing symbol
+        @test_throws ArgumentError automaton(["a"], ['a'], "a", ["a"], [("a", 'b', "a")])
+    end
 end
 
 @testset "Equality Tests" begin
@@ -160,7 +180,6 @@ end
 
 
 #= tests to add:
-- equality test for states
 - string and state functions are equal
 - adding edge for states not already in the automata
 - walkedge true and false test
