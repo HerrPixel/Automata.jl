@@ -40,15 +40,23 @@ mutable struct automaton
 
     function automaton(States::Vector{<:AbstractString}, Alphabet::Vector{Char}, InitialState::AbstractString, AcceptingStates::Vector{<:AbstractString}, Edges::Vector{<:Tuple{<:AbstractString,Char,<:AbstractString}}=[])
 
-        @assert InitialState ∈ States "Initial state $InitialState is not a state"
+        if InitialState ∉ States
+            throw(ArgumentError("Initial State $InitialState is not a state"))
+        end
         for s in AcceptingStates
-            @assert s ∈ States "Accepting state $s is not a state"
+            if s ∉ States
+                throw(ArgumentError("Accepting state $s is not a state"))
+            end
         end
 
         for (a, x, b) in Edges
-            @assert a ∈ States "State $a from edge ($a,$x,$b) is not a state"
-            @assert x ∈ Alphabet "Character $x from edge ($a,$x,$b) is not in the alphabet"
-            @assert b ∈ States "State $b from edge ($a,$x,$b) is not a state"
+            if a ∉ States
+                throw(ArgumentError("State $a from edge ($a,$x,$b) is not a state"))
+            elseif x ∉ Alphabet
+                throw(ArgumentError("Character $x from edge ($a,$x,$b) is not in the alphabet"))
+            elseif b ∉ States
+                throw(ArgumentError("State $b from edge ($a,$x,$b) is not a state"))
+            end
         end
 
         states = Dict{String,state}()
@@ -389,5 +397,4 @@ end
 #= methods to add
 - removing Edges
 - show function
-- throw errors in constructor
 =#
