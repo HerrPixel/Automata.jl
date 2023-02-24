@@ -381,16 +381,44 @@ end
 #                            #
 ##############################
 
-# removes a state from an automaton
-function removeState!(A::automaton, s::state)
-    delete!(A.acceptingStates, s)
-    delete!(A.states, s)
+function removeState!(A::automaton, s::AbstractString)
+    if !haskey(A.states, s)
+        return
+    end
+    removeState!(A, A.states[s])
 end
 
-removeTerminalState!(A::automaton, TerminalState::AbstractString) = removeTerminalState!(A, A.states[TerminalState])
+# removes a state from an automaton
+function removeState!(A::automaton, s::state)
+    if s == A.initialState
+        throw(ArgumentError("Initial state cannot be removed"))
+    end
+
+    delete!(A.acceptingStates, s)
+    delete!(A.states, s)
+
+    for t in A.states
+        for (c, x) in t.Neighbours
+            if x == s
+                removeEdge!(t, c)
+            end
+        end
+    end
+end
+
+function removeTerminalState!(A::automaton, TerminalState::AbstractString)
+    if !haskey(A.states, TerminalState)
+        return
+    end
+    removeState!(A, A.states[TerminalState])
+end
 
 function removeTerminalState!(A::automaton, TerminalState::state)
     delete!(A.acceptingStates, TerminalState)
+end
+
+function removeEdge!(s::state, c::Char)
+    delete!(s.neighbours, c)
 end
 
 ##############################
@@ -417,7 +445,24 @@ function walkEdge(State::state, Symbol::Char)
     return State.neighbours[Symbol]
 end
 
-#= methods to add
-- removing Edges
-- show function
-=#
+function Base.show(io::IO, s::state)
+    println(io, "State \"", s.name, "\" with edges:")
+    for (c, t) in s.neighbours
+        println(io, "$c -> \"", t.name, "\"")
+    end
+end
+
+function Base.show(io::IO, A::automaton)
+    println(io, "Automaton with:")
+    println(io, "initial state \"", A.initialState.name, "\"")
+    println(io, "alphabet: ", A.alphabet)
+    print(io, "terminal states: ")
+    for s in A.acceptingStates
+        print(io, "\"", s.name, "\",")
+    end
+    println(io, "")
+    println(io, "states:")
+    for (n, s) in A.states
+        println(io, s)
+    end
+end
