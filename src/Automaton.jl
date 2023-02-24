@@ -410,7 +410,7 @@ function removeTerminalState!(A::automaton, TerminalState::AbstractString)
     if !haskey(A.states, TerminalState)
         return
     end
-    removeState!(A, A.states[TerminalState])
+    removeTerminalState!(A, A.states[TerminalState])
 end
 
 function removeTerminalState!(A::automaton, TerminalState::state)
