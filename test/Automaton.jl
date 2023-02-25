@@ -496,6 +496,42 @@ end
     end
 end
 
+@testset "Getter functions" begin
+    a = automaton()
+
+    a_state = state("a")
+    addTerminalState!(a, a_state)
+
+    #=
+         a is:
+          ┌─┐  ╔═╗
+        ->│ε│  ║a║
+          └─┘  ╚═╝
+    =#
+
+    @test isTerminal(a, "a")
+    @test isTerminal(a, a_state)
+    @test !isTerminal(a, a.initialState)
+    @test !isTerminal(a, "epsilon")
+end
+
+@testset "walkEdge" begin
+    a = automaton()
+
+    addSymbol!(a, 'a')
+    addEdge!(a, "epsilon", 'a', "a")
+
+    #=
+        a is:
+          ┌─┐       ┌─┐
+        ->│ε│ ─(a)─>│a│
+          └─┘       └─┘
+    =#
+
+    @test isnothing(walkEdge(a.initialState, 'b')) #non-existing edge
+    @test walkEdge(a.initialState, 'a') == a.states["a"]
+end
+
 @testset "Terminal behaviour is correct" begin
     a = Automata.automaton()
     s = Automata.state("a")
@@ -527,6 +563,4 @@ end
 #= tests to add:
 - string and state functions are equal
 - walkedge true and false test
-- removing state with existing and non-exisiting state
-- removing terminal state
 =#
