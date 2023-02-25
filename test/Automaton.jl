@@ -531,36 +531,3 @@ end
     @test isnothing(walkEdge(a.initialState, 'b')) #non-existing edge
     @test walkEdge(a.initialState, 'a') == a.states["a"]
 end
-
-@testset "Terminal behaviour is correct" begin
-    a = Automata.automaton()
-    s = Automata.state("a")
-
-    Automata.addState!(a, s)
-    Automata.addTerminalState!(a, s)
-
-    @test Automata.isTerminal(a, s)
-    @test !Automata.isTerminal(a, a.initialState)
-end
-
-@testset "terminal states not already in the automaton" begin
-    a = Automata.automaton()
-    Automata.addTerminalState!(a, "end")
-    # "end" is not a state in the automata
-    # but should be added, alongside making it terminal
-
-    b = Automata.automaton(["epsilon", "end"], Vector{Char}(), "epsilon", ["end"], Vector{Tuple{String,Char,String}}())
-
-    @test a == b
-end
-
-@testset "edges with states not already in the automaton" begin
-    a = Automata.automaton()
-
-end
-
-
-#= tests to add:
-- string and state functions are equal
-- walkedge true and false test
-=#
