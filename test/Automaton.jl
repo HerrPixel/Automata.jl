@@ -328,6 +328,174 @@ end
     end
 end
 
+@testset "Deconstructing automata" begin
+    @testset "Removing states" begin
+        a = automaton()
+        b = automaton()
+
+        addState!(a, "a")
+        addSymbol!(a, 'a')
+        addEdge!(a, "epsilon", 'a', "a")
+
+        a_state = state("a")
+        addState!(b, a_state)
+        addSymbol!(b, 'a')
+        addEdge!(b, b.initialState, 'a', a_state)
+
+        #=
+            Both automata are:
+              ┌─┐       ┌─┐
+            ->│ε│ ─(a)─>│a│
+              └─┘       └─┘
+        =#
+
+        @test_throws ArgumentError removeState!(a, "epsilon")     # we shouldn't be able to
+        @test_throws ArgumentError removeState!(b, b.initialState) # remove initial states
+
+        removeState!(a, "a")
+
+        #=
+            Now a is:
+              ┌─┐
+            ->│ε│
+              └─┘
+        =#
+
+        @test a != b
+
+        removeState!(b, a_state)
+
+        #=
+            Now both automata are:
+              ┌─┐
+            ->│ε│
+              └─┘
+        =#
+
+        @test a == b
+    end
+
+    @testset "removing terminal states" begin
+        a = automaton()
+        b = automaton()
+
+        a_state = state("a")
+
+        addTerminalState!(a, "a")
+        addTerminalState!(b, a_state)
+
+        #=
+            Now both automata are:
+              ┌─┐  ╔═╗
+            ->│ε│  ║a║
+              └─┘  ╚═╝
+        =#
+
+        removeTerminalState!(a, "epsilon") # removing non-terminal states from the terminal 
+        # states doesn't change anything
+
+        @test a == b
+
+        removeTerminalState!(b, b.initialState) # same as above but now with state argument
+
+        @test a == b
+
+        removeTerminalState!(a, "a")
+
+        #=
+            Now a is 
+              ┌─┐  ┌─┐
+            ->│ε│  │a│
+              └─┘  └─┘
+        =#
+
+        @test a != b
+
+        removeTerminalState!(b, a_state)
+
+        #=
+            Now b is also: 
+              ┌─┐  ┌─┐
+            ->│ε│  │a│
+              └─┘  └─┘
+        =#
+
+        @test a == b
+
+        c = automaton()
+        addState!(c, "a")
+
+        #=
+            Now c is: 
+              ┌─┐  ┌─┐
+            ->│ε│  │a│
+              └─┘  └─┘
+        =#
+
+        @test a == c # only terminal behaviour is changed,
+        @test b == c # the state still exists
+    end
+
+    @testset "Removing edges" begin
+        a = automaton()
+        b = automaton()
+
+        a_state = state("a")
+
+        addState!(a, "a")
+        addState!(b, a_state)
+
+        addSymbol!(a, 'a')
+        addSymbol!(b, 'a')
+
+        addEdge!(a, "epsilon", 'a', "a")
+        addEdge!(b, b.initialState, 'a', a_state)
+
+        #=
+            Both automata are:
+              ┌─┐       ┌─┐
+            ->│ε│ ─(a)─>│a│
+              └─┘       └─┘
+        =#
+
+        @test a == b
+
+        removeEdge!(a.states["a"], 'a') # removing non-exisiting edges does not do anything
+
+        @test a == b
+
+        removeEdge!(a_state, 'a') # same as above
+
+        @test a == b
+
+        removeEdge!(a.initialState, 'a')
+        println(a.initialState)
+
+        #=
+            Now a is:
+              ┌─┐       ┌─┐
+            ->│ε│       │a│
+              └─┘       └─┘
+        =#
+
+        @test a != b
+
+        c = automaton()
+
+        addSymbol!(c, 'a')
+        addState!(c, "a")
+
+        #=
+            Now c is:
+              ┌─┐       ┌─┐
+            ->│ε│       │a│
+              └─┘       └─┘
+        =#
+
+        @test a == c
+    end
+end
+
 @testset "Terminal behaviour is correct" begin
     a = Automata.automaton()
     s = Automata.state("a")
@@ -358,7 +526,6 @@ end
 
 #= tests to add:
 - string and state functions are equal
-- adding edge for states not already in the automata
 - walkedge true and false test
 - removing state with existing and non-exisiting state
 - removing terminal state
