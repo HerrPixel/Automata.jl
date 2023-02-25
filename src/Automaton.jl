@@ -150,6 +150,24 @@ function Base.:(==)(a::automaton, b::automaton)
         end
     end
 
+    # edge check for edges of b to exist in a
+    for (s_name, s_state) in b.states
+        if !haskey(a.states, s_name)
+            return false
+        else
+            t_state = a.states[s_name]
+        end
+
+        # tests for the same edges
+        for (c, x) in s_state.neighbours
+            if !haskey(t_state.neighbours, c)
+                return false
+            elseif t_state.neighbours[c].name != x.name
+                return false
+            end
+        end
+    end
+
     if length(a.acceptingStates) != length(b.acceptingStates)
         return false
     end
@@ -395,10 +413,10 @@ function removeState!(A::automaton, s::state)
     end
 
     delete!(A.acceptingStates, s)
-    delete!(A.states, s)
+    delete!(A.states, s.name)
 
-    for t in A.states
-        for (c, x) in t.Neighbours
+    for (name, t) in A.states
+        for (c, x) in t.neighbours
             if x == s
                 removeEdge!(t, c)
             end
