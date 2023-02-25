@@ -445,6 +445,13 @@ end
 #                            #
 ##############################
 
+function isTerminal(A::automaton, s::AbstractString)
+    if !haskey(A.states, s)
+        return false
+    end
+    return isTerminal(A, A.states[s])
+end
+
 # returns true if the supplied state is terminal in the given automaton
 function isTerminal(A::automaton, s::state)
     return s ∈ A.acceptingStates
@@ -458,8 +465,9 @@ end
 
 # returns the state reached by walking the edge labeled by Symbol from the supplied state
 function walkEdge(State::state, Symbol::Char)
-    # If the state does not have an entry for that symbol, this will fail.
-    # We need to fix this or change it in the future somehow
+    if !haskey(State.neighbours, Symbol)
+        return nothing
+    end
     return State.neighbours[Symbol]
 end
 
