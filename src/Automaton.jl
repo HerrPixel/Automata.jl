@@ -399,6 +399,11 @@ end
 #                            #
 ##############################
 
+"""
+    removeState!(A::automaton, s::AbstractString)
+    removeState!(A::automaton, s::state)
+Remove a state from the automaton.
+"""
 function removeState!(A::automaton, s::AbstractString)
     if !haskey(A.states, s)
         return
@@ -406,7 +411,6 @@ function removeState!(A::automaton, s::AbstractString)
     removeState!(A, A.states[s])
 end
 
-# removes a state from an automaton
 function removeState!(A::automaton, s::state)
     if s == A.initialState
         throw(ArgumentError("Initial state cannot be removed"))
@@ -415,6 +419,7 @@ function removeState!(A::automaton, s::state)
     delete!(A.acceptingStates, s)
     delete!(A.states, s.name)
 
+    # removing edges to that state
     for (name, t) in A.states
         for (c, x) in t.neighbours
             if x == s
@@ -424,6 +429,11 @@ function removeState!(A::automaton, s::state)
     end
 end
 
+"""
+    removeTerminalState!(A::automaton, TerminalState::AbstractString)
+    removeTerminalState!(A::automaton, TerminalState::state)
+Remove the terminality of a state in the automaton. The state still exists after that.
+"""
 function removeTerminalState!(A::automaton, TerminalState::AbstractString)
     if !haskey(A.states, TerminalState)
         return
@@ -435,6 +445,10 @@ function removeTerminalState!(A::automaton, TerminalState::state)
     delete!(A.acceptingStates, TerminalState)
 end
 
+"""
+    removeEdge!(s::state, c::Char)
+Remove an edge from s with label c.
+"""
 function removeEdge!(s::state, c::Char)
     delete!(s.neighbours, c)
 end
@@ -445,6 +459,11 @@ end
 #                            #
 ##############################
 
+"""
+    isTerminal(A::automaton, s::AbstractString)
+    isTerminal(A::automaton, s::state)
+Check if the s is terminal in A
+"""
 function isTerminal(A::automaton, s::AbstractString)
     if !haskey(A.states, s)
         return false
@@ -452,7 +471,6 @@ function isTerminal(A::automaton, s::AbstractString)
     return isTerminal(A, A.states[s])
 end
 
-# returns true if the supplied state is terminal in the given automaton
 function isTerminal(A::automaton, s::state)
     return s ∈ A.acceptingStates
 end
@@ -463,7 +481,10 @@ end
 #                            #
 ##############################
 
-# returns the state reached by walking the edge labeled by Symbol from the supplied state
+"""
+    walkEdge(State::state, Symbol::Char)
+Return the state reached by walking the edge labelled by Symbol from State or nothing if no such edge exists.
+"""
 function walkEdge(State::state, Symbol::Char)
     if !haskey(State.neighbours, Symbol)
         return nothing
