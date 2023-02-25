@@ -8,7 +8,7 @@ include("OperationsOnAutomata.jl")
 export state, automaton
 export addState!, addEdge!, addSymbol!, addTerminalState!
 export semanticEquals, walkEdge, isTerminal
-export removeState!, removeTerminalState!
+export removeState!, removeTerminalState!, removeEdge!
 
 export complete!, reduceNonAccessibleStates!, isAccepted, complement!, hasLoop
 
