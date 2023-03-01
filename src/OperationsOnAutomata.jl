@@ -3,19 +3,34 @@ function complete!(A::automaton)
 
     # we make a junkyard state if we do not already have one. 
     # This is a non-accepting state where all non-specified edges will lead to. 
-    junkyard::state
     if !haskey(A.states, "junkyard")
         junkyard = state("junkyard")
-        addState!(A, junkyard)
+        hasBeenDefined = false
     else
         junkyard = A.states["junkyard"]
+        hasBeenDefined = true
     end
 
     for s in values(A.states)
         for c in A.alphabet
-            if !haskey(s, c)
+            if !haskey(s.neighbours, c)
+
+                # we only add the junkyard state if we need it, 
+                # therefore we track it if we have already added it. 
+                if !hasBeenDefined
+                    addState!(A, junkyard)
+                    hasBeenDefined = true
+                end
+
                 addEdge!(A, s, c, junkyard)
             end
+        end
+    end
+
+    # the junkyard states loops to itself, nothing can escape it
+    if hasBeenDefined
+        for c in A.alphabet
+            addEdge!(A, "junkyard", c, "junkyard")
         end
     end
 end
@@ -60,6 +75,9 @@ function isAccepted(A::automaton, w::AbstractString)
             return false
         end
         s = walkEdge(s, c)
+        if isnothing(s)
+            return false
+        end
     end
 
     return s ∈ A.acceptingStates
@@ -84,6 +102,9 @@ end
 # returns true if the automaton has a reachable loop, false otherwise
 # currently this does not return the states of the loop
 function hasLoop(A::automaton)
+
+    # this is faulty! only nodes in the current stack should be checked!
+    #
 
     # Implementation of recursive DFS via function call stack
     function DFS(currentState::state, currentStack::Stack{state}, visitedStates::Set{state})
