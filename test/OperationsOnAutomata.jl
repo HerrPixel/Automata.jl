@@ -104,9 +104,39 @@ end
     #=
         a is:
           ╔═╗      ╔═╗
-        ->║a║─(a)─>║a║
+        ->║ε║─(a)─>║a║
           ╚═╝      ╚═╝
     =#
 
     @test isAccepted(a, "") # correctly recognizes empty words
+end
+
+@testset "complement automata" begin
+    a = automaton()
+
+    addSymbol!(a, 'a')
+    addEdge!(a, "epsilon", 'a', "a")
+    addTerminalState!(a, "a")
+
+    #=
+        a is:
+          ┌─┐      ╔═╗
+        ->│ε│─(a)─>║a║
+          └─┘      ╚═╝
+    =#
+
+    @test isTerminal(a, "a")
+    @test !isTerminal(a, "epsilon")
+
+    complement!(a)
+
+    #=
+        a is:
+          ╔═╗      ┌─┐
+        ->║ε║─(a)─>│a│
+          ╚═╝      └─┘
+    =#
+
+    @test !isTerminal(a, "a")
+    @test isTerminal(a, "epsilon")
 end
