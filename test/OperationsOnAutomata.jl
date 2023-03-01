@@ -80,3 +80,33 @@ end
 
     @test a == b # reducing twice, changes nothing
 end
+
+@testset "accepting behaviour" begin
+    a = automaton()
+
+    addSymbol!(a, 'a')
+    addEdge!(a, "epsilon", 'a', "a")
+    addTerminalState!(a, "a")
+
+    #=
+        a is:
+          ┌─┐      ╔═╗
+        ->│ε│─(a)─>║a║
+          └─┘      ╚═╝
+    =#
+
+    @test !isAccepted(a, "")
+    @test isAccepted(a, "a")
+    @test !isAccepted(a, "b") # words with symbols not in the alphabet
+
+    addTerminalState!(a, "epsilon")
+
+    #=
+        a is:
+          ╔═╗      ╔═╗
+        ->║a║─(a)─>║a║
+          ╚═╝      ╚═╝
+    =#
+
+    @test isAccepted(a, "") # correctly recognizes empty words
+end
