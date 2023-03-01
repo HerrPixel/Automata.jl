@@ -112,7 +112,7 @@ function hasLoop(A::automaton)
         for nextState in values(currentState.neighbours)
 
             # if we found that neighbour in the current branch already, we found a cycle
-            if nextState ∈ visitedStates
+            if nextState ∈ currentStack
                 return true
             end
 
