@@ -44,5 +44,39 @@
 end
 
 @testset "reduce non accessible states" begin
+    a = automaton()
+    b = automaton()
 
+    addSymbol!(a, 'a')
+    addEdge!(a, "a", 'a', "epsilon")
+
+    addSymbol!(b, 'a')
+    addEdge!(b, "a", 'a', "epsilon")
+
+    #=
+        Both automata are:
+          ┌─┐       ┌─┐
+        ->│ε│<─(a)─ │a│
+          └─┘       └─┘
+    =#
+
+    @test a == b
+    @test semanticEquals(a, b)
+
+    reduceNonAccessibleStates!(a)
+
+    #=
+        Now a is:
+          ┌─┐
+        ->│ε│
+          └─┘
+    =#
+
+    @test a != b                # a has lost a state
+    @test semanticEquals(a, b)  # but semantically, a is still the same
+
+    reduceNonAccessibleStates!(b)
+    reduceNonAccessibleStates!(a)
+
+    @test a == b # reducing twice, changes nothing
 end
