@@ -49,7 +49,7 @@ function reduceNonAccessibleStates!(A::automaton)
         s = dequeue!(q)
         for c in A.alphabet
             target = walkEdge(s, c)
-            if target ∉ reachableStates
+            if !isnothing(target) && target ∉ reachableStates
                 push!(reachableStates, target)
                 enqueue!(q, target)
             end
