@@ -140,3 +140,36 @@ end
     @test !isTerminal(a, "a")
     @test isTerminal(a, "epsilon")
 end
+
+@testset "finding loops" begin
+    a = automaton()
+
+    addSymbol!(a, 'a')
+    addEdge!(a, "epsilon", 'a', "a")
+
+    #=
+        a is:
+          ┌─┐       ┌─┐
+        ->│ε│ ─(a)─>│a│
+          └─┘       └─┘
+    =#
+
+    @test !hasLoop(a)
+
+    addEdge!(a, "a", 'a', "a")
+
+    @test hasLoop(a)
+
+    removeEdge!(a.states["a"], 'a')
+    addEdge!(a, "a", 'a', "aa")
+    addEdge!(a, "aa", 'a', "a")
+
+    #=
+        Now a is:
+          ┌─┐       ┌─┐<─(a)─ ┌──┐
+        ->│ε│ ─(a)─>│a│       │aa│
+          └─┘       └─┘ ─(a)─>└──┘
+    =#
+
+    @test hasLoop(a)
+end
