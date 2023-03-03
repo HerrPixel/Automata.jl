@@ -222,10 +222,12 @@ end
   addEdge!(a, "a", 'a', "aa")
   addEdge!(a, "aa", 'a', "aa")
   addTerminalState!(a, "aa")
+  # a is the automata that accepts words over {a} that have atleast 2 a's
 
   addEdge!(b, "epsilon", 'a', "a")
   addEdge!(b, "a", 'a', "epsilon")
   addTerminalState!(b, "a")
+  # b is the automata that accepts words that have an odd number of a's
 
   c = Automata.Intersection(a, b)
   minimalize(c)
@@ -237,6 +239,7 @@ end
   addEdge!(d, "aa", 'a', "aaa")
   addEdge!(d, "aaa", 'a', "aa")
   addTerminalState!(d, "aaa")
+  # d should detect the intersection of those languages
 
   @test semanticEquals(c, d)
 end
