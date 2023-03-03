@@ -379,6 +379,20 @@ function Intersection(A::automaton, B::automaton)
 
     return zip(A, B, [A.initialState], B.initialState, intersectionTerminal)
 end
+
+function Union(A::automaton, B::automaton)
+
+    function unionTerminal(states::Vector{state}, A::automaton, B::automaton)
+        for s in states
+            if isTerminal(A, s) || isTerminal(B, s)
+                return true
+            end
+        end
+        return false
+    end
+
+    return zip(A, B, [A.initialState], B.initialState, unionTerminal)
+end
 # Possible ideas to implement:
 # - NFA
 # - Powerset construction
