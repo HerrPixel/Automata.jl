@@ -141,6 +141,10 @@ function hasLoop(A::automaton)
     return DFS(A.initialState, s, visitedStates)
 end
 
+"""
+    minimize(A::automaton)
+Minimize automaton A to its canonical minimal automaton. Does not change A but returns a new automaton.
+"""
 function minimalize(A::automaton)
     complete!(A)
     reduceNonAccessibleStates!(A)
@@ -243,6 +247,7 @@ function minimalize(A::automaton)
     indexOfInitialState = 0
     stateNames = Vector{String}()
 
+    # finding out the index of the new initial state
     for classIndex in eachindex(equivalenceClasses)
         class = equivalenceClasses[classIndex]
         for s in class
@@ -256,6 +261,7 @@ function minimalize(A::automaton)
 
     B = automaton(stateNames,collect(A.alphabet),"$indexOfInitialState",Vector{String}())
 
+    # adding new edges and making states terminal
     for classIndex in eachindex(equivalenceClasses)
         class = equivalenceClasses[classIndex]
         representative = class[1]
@@ -266,8 +272,11 @@ function minimalize(A::automaton)
         end
 
         for c in B.alphabet
+
+            # stores the index to which this edge leads to
             result = 0
 
+            # finding that index by going through every class to find the neighbour
             for index in eachindex(equivalenceClasses)
                 result = findfirst( ==(walkEdge(representative,c)), equivalenceClasses[index])
                 if !isnothing(result)
