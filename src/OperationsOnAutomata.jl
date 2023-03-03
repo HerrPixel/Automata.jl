@@ -321,8 +321,6 @@ function zip(A::automaton, B::automaton, shouldBeZipped::Vector{state}, toBeZipp
 
     C = automaton(["$nextName"], collect(A.alphabet), "$nextName", Vector{String}())
 
-    println(C.alphabet)
-
     nextName += 1
 
     enqueue!(q, currState)
@@ -334,8 +332,6 @@ function zip(A::automaton, B::automaton, shouldBeZipped::Vector{state}, toBeZipp
             neighbour = Vector{state}()
 
             for s in currState
-                println(s)
-                println(c)
                 n = walkEdge(s, c)
                 if n ∉ neighbour
                     push!(neighbour, n)
