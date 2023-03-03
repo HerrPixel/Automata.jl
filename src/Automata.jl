@@ -10,6 +10,6 @@ export addState!, addEdge!, addSymbol!, addTerminalState!
 export semanticEquals, walkEdge, isTerminal
 export removeState!, removeTerminalState!, removeEdge!
 
-export complete!, reduceNonAccessibleStates!, isAccepted, complement!, hasLoop
+export complete!, reduceNonAccessibleStates!, isAccepted, complement!, hasLoop, minimalize
 
 end # module Automata
