@@ -173,3 +173,43 @@ end
 
     @test hasLoop(a)
 end
+
+@testset "minmalizing automata" begin
+    a = automaton()
+
+    addSymbol!(a, 'a')
+    addEdge!(a, "epsilon", 'a', "a")
+    addTerminalState!(a, "a")
+    addEdge!(a,"a",'a',"a")
+
+    b = automaton()
+
+    addSymbol!(b, 'a')
+    addEdge!(b, "epsilon", 'a', "a")
+    addTerminalState!(b, "a")
+    addEdge!(b,"a",'a',"a")
+
+    #=
+        both automata are:
+          ┌─┐       ╔═╗─┐
+        ->│ε│ ─(a)─>║a║(a)
+          └─┘       ╚═╝<┘
+    =#
+
+    a = minimalize(a)
+
+    @test semanticEquals(a,b) # minimalizing an already minimized automata changes nothing
+
+    addTerminalState!(a,a.initialState)
+
+    #=
+        Now a is:
+          ╔═╗       ╔═╗─┐
+        ->║ε║ ─(a)─>║a║(a)
+          ╚═╝       ╚═╝<┘
+    =#
+    
+    a = minimalize(a)
+
+    @test !semanticEquals(a,b) # a should be reduced to a single state now
+end
