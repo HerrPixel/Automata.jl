@@ -256,10 +256,10 @@ function semanticEquals(a::automaton, b::automaton)
             for c in alphabet
                 if haskey(s.neighbours, c)
                     t = s.neighbours[c]
-                    enqueue!(q, t)
 
                     if !haskey(canonicalNames, t)
                         canonicalNames[t] = canonicalNames[s] * c
+                        enqueue!(q, t)
                     end
                 end
             end
@@ -306,11 +306,11 @@ function semanticEquals(a::automaton, b::automaton)
 
         # the neighbourhood should also be the same.
         for (c, x) in s.neighbours
-            if !haskey(t, c)
+            if !haskey(t.neighbours, c)
                 return false
             end
 
-            if canonicalNamesInA[x] != canonicalNames[t.neighbours[c]]
+            if canonicalNamesInA[x] != canonicalNamesInB[t.neighbours[c]]
                 return false
             end
         end
