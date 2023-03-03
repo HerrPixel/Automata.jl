@@ -365,6 +365,20 @@ function zip(A::automaton, B::automaton, shouldBeZipped::Vector{state}, toBeZipp
 
     return C
 end
+
+function Intersection(A::automaton, B::automaton)
+
+    function intersectionTerminal(states::Vector{state}, A::automaton, B::automaton)
+        for s in states
+            if !isTerminal(A, s) && !isTerminal(B, s)
+                return false
+            end
+        end
+        return true
+    end
+
+    return zip(A, B, [A.initialState], B.initialState, intersectionTerminal)
+end
 # Possible ideas to implement:
 # - NFA
 # - Powerset construction
