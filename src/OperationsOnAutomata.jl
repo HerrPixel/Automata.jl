@@ -141,6 +141,147 @@ function hasLoop(A::automaton)
     return DFS(A.initialState, s, visitedStates)
 end
 
+function minimalize(A::automaton)
+    complete!(A)
+    reduceNonAccessibleStates!(A)
+
+    hasChanged = true
+
+    equivalenceClasses = Vector{Vector{state}}()
+
+    # populating the equivalence equivalenceClasses
+    terminalStates = collect(A.acceptingStates)
+    nonTerminalStates = Vector{state}()
+    for s in values(A.states)
+        if s ∉ terminalStates
+            push!(nonTerminalStates,s)
+        end
+    end
+
+    push!(equivalenceClasses,terminalStates)
+    push!(equivalenceClasses,nonTerminalStates)
+
+    # splitting equivalence classes until they exhibit the same behaviour for each state
+    # in an equivalence classes
+    while hasChanged
+
+        hasChanged = false
+
+        for classIndex in eachindex(equivalenceClasses)
+            class = equivalenceClasses[classIndex]
+
+            for c in A.alphabet
+
+                # storing the indices of the classes that each edge of our class leads to.
+                # For each symbol in the alphabet, all states in a class should lead to the same
+                # equivalence class.
+                targetIndices = Vector{Int}()
+
+                # for each state, find the index of the class its neighbour belongs to.
+                for s in class
+                    for index in eachindex(equivalenceClasses)
+                        result = findfirst( ==(walkEdge(s,c)), equivalenceClasses[index])
+                        if !isnothing(result)
+                            push!(targetIndices,result)
+                            break
+                        end
+                    end
+                end
+
+                # we translate from target indices to possible new sets to put those states into.
+                indexDict = Dict{Int,Int}()
+                i = 1
+                for t in targetIndices
+                    if !haskey(indexDict,t)
+                        indexDict[t] = i
+                        i += 1
+                    end
+                end
+
+                # each states edge leads to the same equivalence class.
+                if length(indexDict) == 1
+                    continue
+                end
+
+                # otherwise, we need to split, i.e. something changed
+                hasChanged = true
+
+                newEquivalenceClasses = Vector{Vector{state}}()
+
+                # populating the Vector
+                for j in 1:length(indexDict)
+                    push!(newEquivalenceClasses,Vector{state}())
+                end
+
+                # putting the states of the current class in their new splitted equivalence
+                # class based on the class in which their neighbour lies
+                for j in eachindex(class)
+                    index = indexDict[targetIndices[j]]
+                    push!(newEquivalenceClasses[index],class[j])
+                end
+
+                # removing the old class
+                deleteat!(equivalenceClasses,classIndex)
+
+                # and pushing the new ones
+                for j in eachindex(newEquivalenceClasses)
+                    push!(equivalenceClasses,newEquivalenceClasses[j])
+                end
+
+                break
+            end
+
+            # since the vector of classes has changed, we shouldn't iterate over the old vector
+            # so we break and reenter the new loop in the next iteration
+            if hasChanged
+                break
+            end
+        end
+    end
+
+    # now we need to rebuild our automata with the new reduced classes
+    indexOfInitialState = 0
+    stateNames = Vector{String}()
+
+    for classIndex in eachindex(equivalenceClasses)
+        class = equivalenceClasses[classIndex]
+        for s in class
+            if s == A.initialState
+                indexOfInitialState = classIndex
+            end
+        end
+
+        push!(stateNames,"$classIndex")
+    end
+
+    B = automaton(stateNames,collect(A.alphabet),"$indexOfInitialState",Vector{String}())
+
+    for classIndex in eachindex(equivalenceClasses)
+        class = equivalenceClasses[classIndex]
+        representative = class[1]
+
+        # new state is terminal, if the old one was
+        if isTerminal(A,representative)
+            addTerminalState!(B,"$classIndex")
+        end
+
+        for c in B.alphabet
+            result = 0
+
+            for index in eachindex(equivalenceClasses)
+                result = findfirst( ==(walkEdge(representative,c)), equivalenceClasses[index])
+                if !isnothing(result)
+                    break
+                end
+            end
+
+            addEdge!(B,"$classIndex",c,"$result")
+        end
+    end
+
+    return B
+end
+
 # Possible ideas to implement:
 # - NFA
 # - Powerset construction
