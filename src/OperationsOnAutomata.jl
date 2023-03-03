@@ -158,12 +158,12 @@ function minimalize(A::automaton)
     nonTerminalStates = Vector{state}()
     for s in values(A.states)
         if s ∉ terminalStates
-            push!(nonTerminalStates,s)
+            push!(nonTerminalStates, s)
         end
     end
 
-    push!(equivalenceClasses,terminalStates)
-    push!(equivalenceClasses,nonTerminalStates)
+    push!(equivalenceClasses, terminalStates)
+    push!(equivalenceClasses, nonTerminalStates)
 
     # splitting equivalence classes until they exhibit the same behaviour for each state
     # in an equivalence classes
@@ -184,9 +184,9 @@ function minimalize(A::automaton)
                 # for each state, find the index of the class its neighbour belongs to.
                 for s in class
                     for index in eachindex(equivalenceClasses)
-                        result = findfirst( ==(walkEdge(s,c)), equivalenceClasses[index])
+                        result = findfirst(==(walkEdge(s, c)), equivalenceClasses[index])
                         if !isnothing(result)
-                            push!(targetIndices,result)
+                            push!(targetIndices, result)
                             break
                         end
                     end
@@ -196,7 +196,7 @@ function minimalize(A::automaton)
                 indexDict = Dict{Int,Int}()
                 i = 1
                 for t in targetIndices
-                    if !haskey(indexDict,t)
+                    if !haskey(indexDict, t)
                         indexDict[t] = i
                         i += 1
                     end
@@ -214,22 +214,22 @@ function minimalize(A::automaton)
 
                 # populating the Vector
                 for j in 1:length(indexDict)
-                    push!(newEquivalenceClasses,Vector{state}())
+                    push!(newEquivalenceClasses, Vector{state}())
                 end
 
                 # putting the states of the current class in their new splitted equivalence
                 # class based on the class in which their neighbour lies
                 for j in eachindex(class)
                     index = indexDict[targetIndices[j]]
-                    push!(newEquivalenceClasses[index],class[j])
+                    push!(newEquivalenceClasses[index], class[j])
                 end
 
                 # removing the old class
-                deleteat!(equivalenceClasses,classIndex)
+                deleteat!(equivalenceClasses, classIndex)
 
                 # and pushing the new ones
                 for j in eachindex(newEquivalenceClasses)
-                    push!(equivalenceClasses,newEquivalenceClasses[j])
+                    push!(equivalenceClasses, newEquivalenceClasses[j])
                 end
 
                 break
@@ -256,10 +256,10 @@ function minimalize(A::automaton)
             end
         end
 
-        push!(stateNames,"$classIndex")
+        push!(stateNames, "$classIndex")
     end
 
-    B = automaton(stateNames,collect(A.alphabet),"$indexOfInitialState",Vector{String}())
+    B = automaton(stateNames, collect(A.alphabet), "$indexOfInitialState", Vector{String}())
 
     # adding new edges and making states terminal
     for classIndex in eachindex(equivalenceClasses)
@@ -267,8 +267,8 @@ function minimalize(A::automaton)
         representative = class[1]
 
         # new state is terminal, if the old one was
-        if isTerminal(A,representative)
-            addTerminalState!(B,"$classIndex")
+        if isTerminal(A, representative)
+            addTerminalState!(B, "$classIndex")
         end
 
         for c in B.alphabet
@@ -278,19 +278,93 @@ function minimalize(A::automaton)
 
             # finding that index by going through every class to find the neighbour
             for index in eachindex(equivalenceClasses)
-                result = findfirst( ==(walkEdge(representative,c)), equivalenceClasses[index])
+                result = findfirst(==(walkEdge(representative, c)), equivalenceClasses[index])
                 if !isnothing(result)
                     break
                 end
             end
 
-            addEdge!(B,"$classIndex",c,"$result")
+            addEdge!(B, "$classIndex", c, "$result")
         end
     end
 
     return B
 end
 
+function zip(A::automaton, B::automaton, shouldBeZipped::Vector{state}, toBeZipped::state, shouldBeTerminal::Function)
+    q = Queue{Vector{state}}()
+    NewNames = Dict{Vector{state},Int}()
+    nextName = 1
+
+    for c in B.alphabet
+        if c ∉ A.alphabet
+            addSymbol!(A, c)
+        end
+    end
+
+    for c in A.alphabet
+        if c ∉ B.alphabet
+            addSymbol!(B, c)
+        end
+    end
+
+    complete!(A)
+    complete!(B)
+
+    currState = [A.initialState]
+
+    if A.initialState ∈ shouldBeZipped
+        push!(currState, toBeZipped)
+    end
+
+    NewNames[currState] = nextName
+
+    C = automaton(["$nextName"], collect(A.alphabet), "$nextName", Vector{String}())
+
+    println(C.alphabet)
+
+    nextName += 1
+
+    enqueue!(q, currState)
+
+    while !isempty(q)
+        currState = dequeue!(q)
+
+        for c in C.alphabet
+            neighbour = Vector{state}()
+
+            for s in currState
+                println(s)
+                println(c)
+                n = walkEdge(s, c)
+                if n ∉ neighbour
+                    push!(neighbour, n)
+                    if n ∈ shouldBeZipped && toBeZipped ∉ neighbour
+                        push!(neighbour, toBeZipped)
+                    end
+                end
+            end
+
+            if !haskey(NewNames, neighbour)
+                NewNames[neighbour] = nextName
+                nextName += 1
+                enqueue!(q, neighbour)
+            end
+            source = NewNames[currState]
+            target = NewNames[neighbour]
+            addEdge!(C, "$source", c, "$target")
+        end
+    end
+
+    for states in keys(NewNames)
+        if shouldBeTerminal(states, A, B)
+            index = NewNames[states]
+            addTerminalState!(C, "$index")
+        end
+    end
+
+    return C
+end
 # Possible ideas to implement:
 # - NFA
 # - Powerset construction
