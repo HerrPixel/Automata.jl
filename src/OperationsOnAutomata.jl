@@ -393,6 +393,20 @@ function Union(A::automaton, B::automaton)
 
     return zip(A, B, [A.initialState], B.initialState, unionTerminal)
 end
+
+function Concatenation(A::automaton, B::automaton)
+
+    function concatenationTerminal(states::Vector{state}, A::automaton, B::automaton)
+        for s in states
+            if isTerminal(B, s)
+                return true
+            end
+        end
+        return false
+    end
+
+    return zip(A, B, collect(A.terminalStates), B.initialState, concatenationTerminal)
+end
 # Possible ideas to implement:
 # - NFA
 # - Powerset construction
