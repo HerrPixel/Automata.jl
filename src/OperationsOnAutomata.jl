@@ -280,6 +280,7 @@ function minimalize(A::automaton)
             for index in eachindex(equivalenceClasses)
                 result = findfirst(==(walkEdge(representative, c)), equivalenceClasses[index])
                 if !isnothing(result)
+                    result = index
                     break
                 end
             end

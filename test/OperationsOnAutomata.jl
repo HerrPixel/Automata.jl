@@ -237,7 +237,7 @@ end
       └─┘<─(a)─╚═╝
     =#
     c = Automata.Intersection(a, b)
-    minimalize(c)
+    c = minimalize(c)
 
     d = automaton()
 
@@ -250,6 +250,47 @@ end
           ┌─┐      ┌─┐       ┌─┐─(a)─>╔═╗
         ->│ε│─(a)─>│a│─(a)─> │a│      ║a║
           └─┘      └─┘       └─┘<─(a)─╚═╝
+    =#
+
+    @test semanticEquals(c, d)
+end
+
+@testset "Union of automata" begin
+    a = automaton()
+    b = automaton()
+
+    addEdge!(a, "epsilon", 'a', "a")
+    addEdge!(a, "a", 'a', "epsilon")
+    addTerminalState!(a, "epsilon")
+    #= a is the automata that accepts words that have an even number of a's
+      ╔═╗─(a)─>┌─┐
+      ║ε║      │a│
+      ╚═╝<─(a)─└─┘
+    =#
+
+    addEdge!(b, "epsilon", 'a', "a")
+    addEdge!(b, "a", 'a', "epsilon")
+    addTerminalState!(b, "a")
+    #= b is the automata that accepts words that have an odd number of a's
+      ┌─┐─(a)─>╔═╗
+      │ε│      ║a║
+      └─┘<─(a)─╚═╝
+    =#
+
+    c = Automata.Union(a, b)
+    println(c)
+    c = minimalize(c)
+    println(c)
+
+    d = automaton()
+    addEdge!(d, "epsilon", 'a', "epsilon")
+    addTerminalState!(d, "epsilon")
+    #=
+    d should now be the union of those two, i.e. the automaton which
+    accepts everything
+        ╔═╗─┐
+        ║ε║(a)
+        ╚═╝<┘
     =#
 
     @test semanticEquals(c, d)
