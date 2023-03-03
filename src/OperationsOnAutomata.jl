@@ -407,9 +407,3 @@ function Concatenation(A::automaton, B::automaton)
 
     return zip(A, B, collect(A.terminalStates), B.initialState, concatenationTerminal)
 end
-# Possible ideas to implement:
-# - NFA
-# - Powerset construction
-# - union of two languages
-# - kleene star
-# - other operations on languages
