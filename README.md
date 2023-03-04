@@ -34,7 +34,6 @@ addSymbol!(A,'a') # adds 'a' to the alphabet
 addEdge!(A,"banana",'a',"apple") # adds an edge between "banana" and "apple" labeled by 'a'
 
 addTerminalState!(A,"apple") # state "apple" is now a terminal state
-
 ```
 
 ### Deconstructing automata:
