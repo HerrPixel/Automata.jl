@@ -162,8 +162,13 @@ function minimalize(A::automaton)
         end
     end
 
-    push!(equivalenceClasses, terminalStates)
-    push!(equivalenceClasses, nonTerminalStates)
+    if !isempty(terminalStates)
+        push!(equivalenceClasses, terminalStates)
+    end
+
+    if !isempty(nonTerminalStates)
+        push!(equivalenceClasses, nonTerminalStates)
+    end
 
     # splitting equivalence classes until they exhibit the same behaviour for each state
     # in an equivalence classes
@@ -186,7 +191,7 @@ function minimalize(A::automaton)
                     for index in eachindex(equivalenceClasses)
                         result = findfirst(==(walkEdge(s, c)), equivalenceClasses[index])
                         if !isnothing(result)
-                            push!(targetIndices, result)
+                            push!(targetIndices, index)
                             break
                         end
                     end
@@ -353,9 +358,8 @@ function zip(A::automaton, B::automaton, shouldBeZipped::Vector{state}, toBeZipp
         end
     end
 
-    for states in keys(NewNames)
+    for (states, index) in NewNames
         if shouldBeTerminal(states, A, B)
-            index = NewNames[states]
             addTerminalState!(C, "$index")
         end
     end
