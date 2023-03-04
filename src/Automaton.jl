@@ -514,10 +514,14 @@ function Base.show(io::IO, A::automaton)
     end
 end
 
+# notice that this does not hash any neighbours, 
+# since those are mutable and therefore might change the hash
 function Base.hash(a::state, h::UInt=zero(UInt))
     return hash(a.name, h)
 end
 
+# notice that we do not hash any mutable field,
+# since those might change the hash afterwards
 function Base.hash(a::automaton, h::UInt=zero(UInt))
     return hash(a.initialState, h)
 end
