@@ -293,3 +293,28 @@ end
 
     @test semanticEquals(c, d)
 end
+
+@testset "concatenating automata" begin
+    a = automaton()
+
+    addEdge!(a, "epsilon", 'a', "a")
+    addEdge!(a, "a", 'a', "a")
+    addTerminalState!(a, "a")
+
+    b = automaton()
+    addEdge!(b, "epsilon", 'b', "b")
+    addEdge!(b, "b", 'b', "b")
+    addTerminalState!(b, "b")
+
+    @test isAccepted(a, "a")
+    @test !isAccepted(a, "b")
+
+    @test isAccepted(b, "b")
+    @test !isAccepted(b, "a")
+
+    c = Concatenation(a, b)
+
+    @test isAccepted(c, "ab")
+    @test !isAccepted(c, "a")
+    @test !isAccepted(c, "b")
+end
