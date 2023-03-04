@@ -301,10 +301,26 @@ end
     addEdge!(a, "a", 'a', "a")
     addTerminalState!(a, "a")
 
+    #=
+        a is:
+          ┌─┐       ╔═╗─┐
+        ->│ε│ ─(a)─>║a║(a)
+          └─┘       ╚═╝<┘
+          i.e. the automata that accepts words in {a}* with atleast one a
+    =#
+
     b = automaton()
     addEdge!(b, "epsilon", 'b', "b")
     addEdge!(b, "b", 'b', "b")
     addTerminalState!(b, "b")
+
+    #=
+        b is:
+          ┌─┐       ╔═╗─┐
+        ->│ε│ ─(b)─>║b║(b)
+          └─┘       ╚═╝<┘
+          i.e. the automata that accepts words in {b}* with atleast one b
+    =#
 
     @test isAccepted(a, "a")
     @test !isAccepted(a, "b")
@@ -313,6 +329,8 @@ end
     @test !isAccepted(b, "a")
 
     c = Concatenation(a, b)
+
+    # now c should accept words of the form {a}+{b}+ i.e. words with atleast one a first and then atleast one b
 
     @test isAccepted(c, "ab")
     @test !isAccepted(c, "a")
