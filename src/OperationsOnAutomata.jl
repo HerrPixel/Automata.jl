@@ -1,4 +1,7 @@
-# completes the automaton, such that each state has an edge for each symbol in the alphabet.
+""" 
+    complete!(A::automaton)
+completes the automaton, such that each state has an edge for each symbol in the alphabet.
+"""
 function complete!(A::automaton)
 
     # we make a junkyard state if we do not already have one. 
@@ -35,7 +38,10 @@ function complete!(A::automaton)
     end
 end
 
-# removes all unreachable states of an automaton
+"""
+    reduceNonAccessibleStates!(A::automaton)
+removes all unreachable states of an automaton.
+"""
 function reduceNonAccessibleStates!(A::automaton)
     reachableStates = Set{state}()
     q = Queue{state}()
@@ -66,7 +72,10 @@ function reduceNonAccessibleStates!(A::automaton)
     end
 end
 
-# returns true if the automaton A accepts the word w, false otherwise
+"""
+    isAccepted()
+returns true if the automaton A accepts the word w, false otherwise
+"""
 function isAccepted(A::automaton, w::AbstractString)
     s = A.initialState
 
@@ -83,6 +92,10 @@ function isAccepted(A::automaton, w::AbstractString)
     return s ∈ A.acceptingStates
 end
 
+"""
+    complement!(A::automaton)
+Change A such that it accepts the complement of its language L(A)^C
+"""
 function complement!(A::automaton)
 
     # maybe add reduceNonAccessibleStates(A) here
@@ -99,8 +112,11 @@ function complement!(A::automaton)
     end
 end
 
-# returns true if the automaton has a reachable loop, false otherwise
-# currently this does not return the states of the loop
+"""
+    hasLoop(A::automaton)
+returns true if the automaton has a reachable loop, false otherwise
+currently this does not return the states of the loop
+"""
 function hasLoop(A::automaton)
 
     # this is faulty! only nodes in the current stack should be checked!
