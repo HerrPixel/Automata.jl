@@ -142,7 +142,7 @@ function hasLoop(A::automaton)
 end
 
 """
-    minimize(A::automaton)
+    minimalize(A::automaton)
 Minimize automaton A to its canonical minimal automaton. Does not change A but returns a new automaton.
 """
 function minimalize(A::automaton)
