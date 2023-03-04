@@ -278,9 +278,7 @@ end
     =#
 
     c = Automata.Union(a, b)
-    println(c)
     c = minimalize(c)
-    println(c)
 
     d = automaton()
     addEdge!(d, "epsilon", 'a', "epsilon")
