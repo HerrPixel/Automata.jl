@@ -513,3 +513,11 @@ function Base.show(io::IO, A::automaton)
         println(io, s)
     end
 end
+
+function Base.hash(a::state, h::UInt=zero(UInt))
+    return hash(a.name, h)
+end
+
+function Base.hash(a::automaton, h::UInt=zero(UInt))
+    return hash(a.initialState, h)
+end
