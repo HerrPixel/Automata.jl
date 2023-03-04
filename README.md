@@ -10,6 +10,7 @@ Implemented features:
 - adding and removing edges
 - adding and removing terminalilty of states
 - checking states and automata for syntactic and semantic equality
+- testing words for acceptance
 - completing missing edges
 - deleting non-accesible states and edges
 - building a complement automata
