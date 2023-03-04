@@ -51,6 +51,8 @@ removeEdge!(banana,'a') # removes the outgoing edge from state "banana" labelled
 ### Operations on Automata
 
 ```julia
+isAccepted(A,"abaaa") # returns true if the word "abaaa" is accepted by the automaton A, false otherwise
+
 complete!(A) # adds all non-existing edge, such that for each symbol 'c' in the alphabet of A, every state has an edge labelled by 'c'
 
 reduceNonAccessibleStates!(A) # removes unreachable states and edges from A
