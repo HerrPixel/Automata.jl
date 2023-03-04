@@ -367,6 +367,10 @@ function zip(A::automaton, B::automaton, shouldBeZipped::Vector{state}, toBeZipp
     return C
 end
 
+"""
+    Intersection(A::automaton, B::automaton)
+Build Automata that accepts Intersection of Languages of A and B
+"""
 function Intersection(A::automaton, B::automaton)
 
     function intersectionTerminal(states::Vector{state}, A::automaton, B::automaton)
@@ -381,6 +385,10 @@ function Intersection(A::automaton, B::automaton)
     return zip(A, B, [A.initialState], B.initialState, intersectionTerminal)
 end
 
+"""
+    Union(A::automaton, B::automaton)
+Build Automata that accepts Union of Languages of A and B
+"""
 function Union(A::automaton, B::automaton)
 
     function unionTerminal(states::Vector{state}, A::automaton, B::automaton)
@@ -395,6 +403,10 @@ function Union(A::automaton, B::automaton)
     return zip(A, B, [A.initialState], B.initialState, unionTerminal)
 end
 
+"""
+    Intersection(A::automaton, B::automaton)
+Build Automata that accepts Concatenation of Languages of A and B
+"""
 function Concatenation(A::automaton, B::automaton)
 
     function concatenationTerminal(states::Vector{state}, A::automaton, B::automaton)
