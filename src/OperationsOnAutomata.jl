@@ -297,11 +297,27 @@ function minimalize(A::automaton)
     return B
 end
 
+#= 
+zip up two automata, 
+i.e. if any state in shouldBeZipped is reached, 
+it is zipped up with toBeZipped and edges are walked in both automata 
+to build a powerset automata. 
+In the resulting automata, 
+each state is represented by a set of states in A and B.
+The function shouldBeTerminal(states::Vector{state}, A::automaton, B::automaton)
+is then asked if that state is supposed to be Terminal.
+=#
 function zip(A::automaton, B::automaton, shouldBeZipped::Vector{state}, toBeZipped::state, shouldBeTerminal::Function)
+
+    # we make a BFS over the powerset automata, therefore we need a queue
     q = Queue{Vector{state}}()
+
+    # each new state gets a name, in this case a number.
+    # to remember states, we store the represented set in a dictionary.
     NewNames = Dict{Vector{state},Int}()
     nextName = 1
 
+    # building the alphabet as a union of both alphabets
     for c in B.alphabet
         if c ∉ A.alphabet
             addSymbol!(A, c)
@@ -314,17 +330,21 @@ function zip(A::automaton, B::automaton, shouldBeZipped::Vector{state}, toBeZipp
         end
     end
 
+    # completing both automata to avoid missing edges
     complete!(A)
     complete!(B)
 
     currState = [A.initialState]
 
+    # edge case, if the initial state should already be zipped, our initial state is already a power-state
     if A.initialState ∈ shouldBeZipped
         push!(currState, toBeZipped)
     end
 
     NewNames[currState] = nextName
 
+    # the skeleton for our new automaton.
+    # contains the initial state and the bigger alphabet but nothing else for now.
     C = automaton(["$nextName"], collect(A.alphabet), "$nextName", Vector{String}())
 
     nextName += 1
@@ -334,30 +354,43 @@ function zip(A::automaton, B::automaton, shouldBeZipped::Vector{state}, toBeZipp
     while !isempty(q)
         currState = dequeue!(q)
 
+        # for each state, explore all edges
         for c in C.alphabet
+
+            # since we are possibly a power-state,
+            # we need to collect neighbours from all our states
             neighbour = Vector{state}()
 
             for s in currState
                 n = walkEdge(s, c)
+
+                # we don't need to collect a neighbour twice
                 if n ∉ neighbour
                     push!(neighbour, n)
+
+                    # if we reached a state that should be zipped, add the zipped state to our neighbour list
                     if n ∈ shouldBeZipped && toBeZipped ∉ neighbour
                         push!(neighbour, toBeZipped)
                     end
                 end
             end
 
+            # if this particular power-state is not already in our automata,
+            # create it and add it to the queue
             if !haskey(NewNames, neighbour)
                 NewNames[neighbour] = nextName
                 nextName += 1
                 enqueue!(q, neighbour)
             end
+
+            # and finally add the newly explored edge
             source = NewNames[currState]
             target = NewNames[neighbour]
             addEdge!(C, "$source", c, "$target")
         end
     end
 
+    # check each of the new states for terminality based on the supplied function
     for (states, index) in NewNames
         if shouldBeTerminal(states, A, B)
             addTerminalState!(C, "$index")
