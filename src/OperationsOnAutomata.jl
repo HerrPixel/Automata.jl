@@ -406,5 +406,5 @@ function Concatenation(A::automaton, B::automaton)
         return false
     end
 
-    return zip(A, B, collect(A.terminalStates), B.initialState, concatenationTerminal)
+    return zip(A, B, collect(A.acceptingStates), B.initialState, concatenationTerminal)
 end
