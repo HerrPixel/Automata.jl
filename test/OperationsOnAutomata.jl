@@ -146,12 +146,13 @@ end
 
     addSymbol!(a, 'a')
     addEdge!(a, "epsilon", 'a', "a")
+    addTerminalState!(a, "a")
 
     #=
         a is:
-          ┌─┐       ┌─┐
-        ->│ε│ ─(a)─>│a│
-          └─┘       └─┘
+          ┌─┐      ╔═╗
+        ->│ε│─(a)─>║a║
+          └─┘      ╚═╝
     =#
 
     @test !hasLoop(a)
@@ -166,9 +167,9 @@ end
 
     #=
         Now a is:
-          ┌─┐       ┌─┐<─(a)─ ┌──┐
-        ->│ε│ ─(a)─>│a│       │aa│
-          └─┘       └─┘ ─(a)─>└──┘
+          ┌─┐       ╔═╗<─(a)─ ┌──┐
+        ->│ε│ ─(a)─>║a║       │aa│
+          └─┘       ╚═╝ ─(a)─>└──┘
     =#
 
     @test hasLoop(a)
