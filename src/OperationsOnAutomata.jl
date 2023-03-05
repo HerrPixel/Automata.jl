@@ -114,13 +114,38 @@ end
 
 """
     hasLoop(A::automaton)
-returns true if the automaton has a reachable loop, false otherwise
-currently this does not return the states of the loop
+returns true if the automaton has a reachable loop that leads to an end state, false otherwise.
+I.e. The language recognized by the automaton is infinite.
 """
 function hasLoop(A::automaton)
 
-    # this is faulty! only nodes in the current stack should be checked!
-    #
+    # BFS from the s to check if any state of the loop can reach a terminal state.
+    function canReachTerminalState(A::automaton, s::state)
+        q = Queue{state}()
+        visited = Set{state}()
+
+        if isTerminal(A, s)
+            return true
+        end
+
+        enqueue!(q, s)
+        push!(visited, s)
+
+        while !isempty(q)
+            t = dequeue!(q)
+            for nextState in values(t.neighbours)
+                if isTerminal(A, nextState)
+                    return true
+                end
+                if nextState ∈ visited
+                    continue
+                end
+                enqueue!(q, nextState)
+                push!(visited, nextState)
+            end
+        end
+        return false
+    end
 
     # Implementation of recursive DFS via function call stack
     function DFS(currentState::state, currentStack::Stack{state}, visitedStates::Set{state})
@@ -128,8 +153,12 @@ function hasLoop(A::automaton)
         for nextState in values(currentState.neighbours)
 
             # if we found that neighbour in the current branch already, we found a cycle
-            if nextState ∈ currentStack
+            if nextState ∈ currentStack && canReachTerminalState(A, nextState)
                 return true
+            end
+
+            if nextState ∈ visitedStates
+                continue
             end
 
             # otherwise we traverse deeper
