@@ -173,6 +173,19 @@ end
     =#
 
     @test hasLoop(a)
+
+    removeTerminalState!(a, "a")
+
+    #=
+        Now a is:
+          ┌─┐       ┌─┐<─(a)─ ┌──┐
+        ->│ε│ ─(a)─>│a│       │aa│
+          └─┘       └─┘ ─(a)─>└──┘
+    =#
+
+    @test !hasLoop(a) # we only want to detect loops that lead to
+    # a reacheable terminal state, therefore this is not a loop we
+    # want to detect
 end
 
 @testset "minmalizing automata" begin
