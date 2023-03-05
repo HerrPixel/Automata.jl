@@ -59,7 +59,7 @@ reduceNonAccessibleStates!(A) # removes unreachable states and edges from A
 
 complement!(A) # changes A such that it accepts its complement Language L^c
 
-hasLoop(A) # returns true if A has a reachable loop, false otherwise
+hasLoop(A) # returns true if A has a reachable loop that leads to a terminal state, false otherwise. I.e. decides if L(A) is infinite or not.
 
 B = minimalize(A) # returns a new minimal automata B, such that L(A) = L(B) and B is minimal with this property.
 
