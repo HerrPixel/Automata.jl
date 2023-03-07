@@ -253,7 +253,7 @@ function semanticEquals(a::automaton, b::automaton)
         while !isempty(q)
             s = dequeue!(q)
 
-            for c in alphabet
+            for c in sort(collect(alphabet))
                 if haskey(s.neighbours, c)
                     t = s.neighbours[c]
 
